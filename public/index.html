@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Project Asmondy</title>
+    <style>
+        body { background: #050505; color: #fff; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; overflow: hidden; }
+        
+        /* MENU & UI */
+        #menu { position: absolute; z-index: 100; background: rgba(0,0,0,0.96); width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .config-area { display: flex; gap: 40px; margin: 20px 0; background: #111; padding: 20px; border-radius: 8px; border: 1px solid #333; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
+        .config-col { display: flex; flex-direction: column; gap: 8px; }
+        .key-row { display: flex; justify-content: space-between; align-items: center; width: 240px; font-size: 13px; color: #aaa; }
+        .key-btn { background: #222; border: 1px solid #444; color: #0cf; padding: 6px; width: 110px; cursor: pointer; text-align: center; border-radius: 4px; font-family: monospace; font-weight: bold; transition: 0.2s; }
+        .key-btn:hover { background: #333; border-color: #666; }
+        .key-btn.waiting { background: #f0f; color: #fff; box-shadow: 0 0 10px #f0f; border-color: #fff; }
+        
+        .btn-row { display: flex; gap: 15px; margin-top: 20px; }
+        button.start-btn { padding: 15px 40px; font-size: 20px; cursor: pointer; border: none; font-weight: bold; border-radius: 6px; text-transform: uppercase; letter-spacing: 1px; transition: transform 0.1s, filter 0.1s; color: #000; }
+        button.start-btn:hover { transform: scale(1.05); filter: brightness(1.1); }
+        .btn-local { background: #00ffcc; box-shadow: 0 0 15px #00ffcc80; }
+        .btn-zen { background: #a29bfe; box-shadow: 0 0 15px #a29bfe80; }
+        .btn-online { background: #ff0055; box-shadow: 0 0 15px #ff005580; color: white; }
+        .status { margin-top: 20px; font-size: 16px; color: #888; animation: pulse 2s infinite; }
+        
+        /* GAMEPLAY LAYOUT */
+        .game-area { display: flex; gap: 40px; transform: scale(0.9); transition: opacity 0.5s; }
+        .player-root { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .player-container { display: flex; align-items: flex-end; gap: 10px; position: relative; }
+        
+        /* STATS DASHBOARD */
+        .stats-row { display: flex; gap: 10px; width: 100%; justify-content: center; margin-bottom: 5px; }
+        .stat-box { background: #111; border: 1px solid #333; padding: 5px 10px; border-radius: 4px; text-align: center; min-width: 60px; }
+        .stat-label { font-size: 10px; color: #666; letter-spacing: 1px; text-transform: uppercase; }
+        .stat-value { font-size: 14px; font-weight: bold; color: #fff; font-family: monospace; }
+        
+        .main-board-wrap { position: relative; border: 4px solid #333; background: #000; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        canvas { display: block; }
+        .side-col { display: flex; flex-direction: column; height: 780px; justify-content: space-between; }
+        .side-box { border: 2px solid #333; background: #000; display: flex; flex-direction: column; align-items: center; padding-top: 10px; margin-bottom: 10px;}
+        .side-label { font-size: 11px; color: #555; font-weight: bold; margin-bottom: 5px; letter-spacing: 1px; }
+        
+        .garbage-bar { width: 12px; height: 780px; background: #111; border: 1px solid #333; position: relative; border-radius: 2px; overflow: hidden; }
+        .garbage-fill { position: absolute; bottom: 0; width: 100%; background: #ff0033; transition: height 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 0 10px #ff0033; }
+
+        /* POPUPS & TEXT */
+        .float-text { position: absolute; left: 50%; transform: translateX(-50%); font-weight: bold; opacity: 0; pointer-events: none; transition: 0.1s; text-align: center; width: 300px; text-shadow: 0 4px 8px rgba(0,0,0,0.9); font-style: italic; z-index: 50; }
+        .action-text { top: 250px; font-size: 36px; color: #fff; font-weight: 900; letter-spacing: 3px; }
+        .combo-text { top: 200px; font-size: 28px; color: #ffcc00; }
+        .b2b-text { top: 160px; font-size: 18px; color: #00ffcc; letter-spacing: 2px; }
+        .spin-text { top: 300px; font-size: 24px; color: #d63031; }
+        
+        .flash { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; opacity: 0; pointer-events: none; mix-blend-mode: overlay; }
+        .hidden { display: none !important; }
+        
+        @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+        .win-msg { position: absolute; font-size: 80px; font-weight: 900; color: #00ffcc; text-shadow: 0 0 30px #00ffcc; z-index: 200; display: none; }
+        .lose-msg { position: absolute; font-size: 80px; font-weight: 900; color: #ff0033; text-shadow: 0 0 30px #ff0033; z-index: 200; display: none; }
+    </style>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+
+    <div id="menu">
+        <h1 style="color:#fff; font-size: 42px; margin-bottom: 5px; text-shadow: 0 0 20px rgba(255,255,255,0.2);">PROJECT <span style="color:#00ffcc">ASMONDY</span></h1>
+        
+        <div class="config-area">
+            <div id="p1-config" class="config-col">
+                <h3 style="color:#00e5ff; margin: 0 0 10px 0;">PLAYER 1</h3>
+                <div class="key-row">Left: <div id="p1-left" class="key-btn" onclick="assignKey('p1','left',this)">ArrowLeft</div></div>
+                <div class="key-row">Right: <div id="p1-right" class="key-btn" onclick="assignKey('p1','right',this)">ArrowRight</div></div>
+                <div class="key-row">Rotate: <div id="p1-rotate" class="key-btn" onclick="assignKey('p1','rotate',this)">ArrowUp</div></div>
+                <div class="key-row">Soft Drop: <div id="p1-soft" class="key-btn" onclick="assignKey('p1','soft',this)">ArrowDown</div></div>
+                <div class="key-row">Hard Drop: <div id="p1-hard" class="key-btn" onclick="assignKey('p1','hard',this)">Space</div></div>
+                <div class="key-row">Hold: <div id="p1-hold" class="key-btn" onclick="assignKey('p1','hold',this)">ShiftLeft</div></div>
+            </div>
+            <div id="p2-config" class="config-col">
+                <h3 style="color:#ff00ff; margin: 0 0 10px 0;">PLAYER 2</h3>
+                <div class="key-row">Left: <div id="p2-left" class="key-btn" onclick="assignKey('p2','left',this)">KeyA</div></div>
+                <div class="key-row">Right: <div id="p2-right" class="key-btn" onclick="assignKey('p2','right',this)">KeyD</div></div>
+                <div class="key-row">Rotate: <div id="p2-rotate" class="key-btn" onclick="assignKey('p2','rotate',this)">KeyW</div></div>
+                <div class="key-row">Soft Drop: <div id="p2-soft" class="key-btn" onclick="assignKey('p2','soft',this)">KeyS</div></div>
+                <div class="key-row">Hard Drop: <div id="p2-hard" class="key-btn" onclick="assignKey('p2','hard',this)">Tab</div></div>
+                <div class="key-row">Hold: <div id="p2-hold" class="key-btn" onclick="assignKey('p2','hold',this)">KeyQ</div></div>
+            </div>
+        </div>
+        
+        <div class="btn-row">
+            <button class="start-btn btn-local" onclick="startLocal()">LOCAL DUEL</button>
+            <button class="start-btn btn-zen" onclick="startZen()">ZEN MODE</button>
+            <button class="start-btn btn-online" onclick="startOnline()">ONLINE MATCH</button>
+        </div>
+        <div id="status-msg" class="status"></div>
+    </div>
+
+    <div id="win-overlay" class="win-msg">VICTORY</div>
+    <div id="lose-overlay" class="lose-msg">DEFEATED</div>
+
+    <div id="game-ui" class="game-area">
+        <div class="player-root">
+            <div class="stats-row">
+                <div class="stat-box"><div class="stat-label">TIME</div><div id="p1-timer" class="stat-value">00:00</div></div>
+                <div class="stat-box"><div class="stat-label">PPS</div><div id="p1-pps" class="stat-value">0.00</div></div>
+                <div class="stat-box"><div class="stat-label">APM</div><div id="p1-apm" class="stat-value">0</div></div>
+            </div>
+            <div id="p1-area" class="player-container">
+                <div class="garbage-bar"><div id="p1-g" class="garbage-fill"></div></div>
+                <div class="side-col">
+                    <div class="side-box" style="height:80px"><div class="side-label">HOLD</div><canvas id="p1-h" width="60" height="50"></canvas></div>
+                    
+                    <div class="side-box" style="padding: 10px 0;">
+                        <div class="stat-label">SENT</div><div id="p1-sent" class="stat-value">0</div>
+                        <div style="height:5px"></div>
+                        <div class="stat-label">RECV</div><div id="p1-recv" class="stat-value">0</div>
+                    </div>
+
+                    <div id="p1-action" class="float-text action-text">SINGLE</div>
+                    <div id="p1-b2b" class="float-text b2b-text">B2B x1</div>
+                    <div id="p1-combo" class="float-text combo-text">COMBO</div>
+                    <div id="p1-spin" class="float-text spin-text">T-SPIN</div>
+                </div>
+                <div class="main-board-wrap">
+                    <div id="p1-label" style="position:absolute; top:-25px; width:100%; text-align:center; color:#00e5ff; font-weight:bold; letter-spacing:2px;">PLAYER 1</div>
+                    <canvas id="p1" width="120" height="780"></canvas>
+                    <div id="p1-flash" class="flash"></div>
+                </div>
+                <div class="side-col"><div class="side-box" style="height:200px"><div class="side-label">NEXT</div><canvas id="p1-n" width="60" height="180"></canvas></div></div>
+            </div>
+        </div>
+
+        <div class="player-root" id="p2-root">
+            <div class="stats-row">
+                <div class="stat-box"><div class="stat-label">TIME</div><div id="p2-timer" class="stat-value">00:00</div></div>
+                <div class="stat-box"><div class="stat-label">PPS</div><div id="p2-pps" class="stat-value">0.00</div></div>
+                <div class="stat-box"><div class="stat-label">APM</div><div id="p2-apm" class="stat-value">0</div></div>
+            </div>
+            <div id="p2-area" class="player-container">
+                <div class="garbage-bar"><div id="p2-g" class="garbage-fill"></div></div>
+                <div class="side-col">
+                    <div class="side-box" style="height:80px"><div class="side-label">HOLD</div><canvas id="p2-h" width="60" height="50"></canvas></div>
+                    
+                    <div class="side-box" style="padding: 10px 0;">
+                        <div class="stat-label">SENT</div><div id="p2-sent" class="stat-value">0</div>
+                        <div style="height:5px"></div>
+                        <div class="stat-label">RECV</div><div id="p2-recv" class="stat-value">0</div>
+                    </div>
+
+                    <div id="p2-action" class="float-text action-text">SINGLE</div>
+                    <div id="p2-b2b" class="float-text b2b-text">B2B x1</div>
+                    <div id="p2-combo" class="float-text combo-text">COMBO</div>
+                    <div id="p2-spin" class="float-text spin-text">T-SPIN</div>
+                </div>
+                <div class="main-board-wrap">
+                    <div id="p2-label" style="position:absolute; top:-25px; width:100%; text-align:center; color:#ff00ff; font-weight:bold; letter-spacing:2px;">PLAYER 2</div>
+                    <canvas id="p2" width="120" height="780"></canvas>
+                    <div id="p2-flash" class="flash"></div>
+                </div>
+                <div class="side-col"><div class="side-box" style="height:200px"><div class="side-label">NEXT</div><canvas id="p2-n" width="60" height="180"></canvas></div></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const COLS = 4, ROWS = 26, B_SIZE = 30;
+        const PIECES = [[[1,1,1,1]],[[1,1],[1,1]],[[0,1,0],[1,1,1]],[[1,1,0],[0,1,1]],[[0,1,1],[1,1,0]],[[1,0,0],[1,1,1]],[[0,0,1],[1,1,1]]];
+        
+        // 0:I, 1:O, 2:T, 3:S, 4:Z, 5:J, 6:L
+        const COLORS = [
+            '#31C7EF', // 0: I (Teal)
+            '#F7D308', // 1: O (Yellow)
+            '#FF69B4', // 2: T (Pink)
+            '#EF2029', // 3: S (Red)
+            '#42B642', // 4: Z (Green)
+            '#9D00FF', // 5: J (Purple)
+            '#EF7921'  // 6: L (Orange)
+        ];
+
+        // --- CUSTOM RANDOM NUMBER GENERATOR (Seeded) ---
+        class SeededRNG {
+            constructor(seed) {
+                this.seed = seed || Math.floor(Math.random() * 1000000);
+            }
+            // Linear Congruential Generator
+            next() {
+                this.seed = (this.seed * 9301 + 49297) % 233280;
+                return this.seed / 233280;
+            }
+        }
+
+        let gameActive = false, gameMode = 'local', socket = null, myRoom = null;
+        const keysHeld = new Set();
+        let startTime = 0;
+        
+        const controls = {
+            p1: { left:'ArrowLeft', right:'ArrowRight', rotate:'ArrowUp', soft:'ArrowDown', hard:'Space', hold:'ShiftLeft' },
+            p2: { left:'KeyA', right:'KeyD', rotate:'KeyW', soft:'KeyS', hard:'Tab', hold:'KeyQ' }
+        };
+
+        let listeningBtn = null;
+        function assignKey(p, action, btn) { listeningBtn = { p, action, btn }; btn.innerText = "..."; btn.classList.add('waiting'); }
+
+        window.addEventListener('keydown', e => {
+            if (listeningBtn) {
+                e.preventDefault();
+                controls[listeningBtn.p][listeningBtn.action] = e.code;
+                listeningBtn.btn.innerText = e.code;
+                listeningBtn.btn.classList.remove('waiting');
+                listeningBtn = null; return;
+            }
+            if(!keysHeld.has(e.code)) {
+                keysHeld.add(e.code);
+                if(gameActive) handleInitialPress(e.code);
+            }
+            if(["Space","ArrowUp","ArrowDown","Tab"].includes(e.code)) e.preventDefault();
+        });
+        window.addEventListener('keyup', e => keysHeld.delete(e.code));
+
+        function handleInitialPress(code) {
+            [p1, p2].forEach(p => {
+                if(gameMode === 'zen' && p.id === 'p2') return;
+                if(gameMode === 'online' && p.id === 'p2') return; 
+                const c = controls[p.id];
+                if(code === c.rotate) p.rotate();
+                if(code === c.hold) p.hold();
+                if(code === c.hard) p.hardDrop();
+                if(code === c.left || code === c.right) {
+                    p.dasTimer = 0; p.arrTimer = 0;
+                    const dir = code === c.left ? -1 : 1;
+                    p.move(dir);
+                }
+            });
+        }
+
+        function startGameCommon(seed) {
+            startTime = Date.now();
+            document.getElementById('menu').classList.add('hidden');
+            gameActive = true;
+            // Initialize both players with SAME SEED
+            p1.initRNG(seed);
+            p2.initRNG(seed);
+            p1.reset();
+            p2.reset();
+            loop();
+        }
+
+        function startLocal() { 
+            gameMode = 'local'; 
+            // Generate a random seed locally, give to both
+            const seed = Math.floor(Math.random() * 1000000);
+            startGameCommon(seed); 
+        }
+        
+        function startZen() {
+            gameMode = 'zen';
+            document.getElementById('p2-root').style.opacity = '0';
+            startGameCommon(Math.floor(Math.random() * 1000000));
+        }
+
+        function startOnline() {
+            if (typeof io === 'undefined') { alert("Host this on a server to play online."); return; }
+            document.querySelector('.btn-row').style.display = 'none';
+            document.getElementById('status-msg').innerText = "CONNECTING...";
+            try {
+                socket = io();
+                socket.on('connect', () => { document.getElementById('status-msg').innerText = "SEARCHING..."; socket.emit('join_game'); });
+                socket.on('waiting', () => { document.getElementById('status-msg').innerText = "WAITING FOR P2..."; });
+                socket.on('match_start', (data) => {
+                    myRoom = data.room; gameMode = 'online';
+                    document.getElementById('p1-label').innerText = "YOU"; document.getElementById('p2-label').innerText = "OPPONENT";
+                    // USE SERVER SEED
+                    startGameCommon(data.seed);
+                });
+                socket.on('receive_garbage', (amount) => { if(gameMode==='online') p1.receiveGarbage(amount); });
+                socket.on('enemy_board', (grid) => {
+                    const ctx = p2.ctx; ctx.fillStyle='#000'; ctx.fillRect(0,0,120,780);
+                    if(grid) grid.forEach((r,y)=>r.forEach((v,x)=>{ if(v){ ctx.fillStyle=v; ctx.fillRect(x*B_SIZE, y*B_SIZE, B_SIZE-1, B_SIZE-1); }}));
+                });
+                socket.on('game_won', () => { gameActive = false; document.getElementById('win-overlay').style.display = 'block'; });
+            } catch (e) { alert("Connection Failed"); }
+        }
+
+        class Player {
+            constructor(id, nId, hId, gId, cId, fId, bId, sId) {
+                this.id = id;
+                this.ctx = document.getElementById(id).getContext('2d');
+                this.nCtx = document.getElementById(nId).getContext('2d');
+                this.hCtx = document.getElementById(hId).getContext('2d');
+                this.gBar = document.getElementById(gId);
+                this.cText = document.getElementById(cId);
+                this.flashEl = document.getElementById(fId);
+                this.bText = document.getElementById(bId);
+                this.sText = document.getElementById(sId);
+                this.aText = document.getElementById(id + '-action');
+
+                // DOM Elements for Stats
+                this.elPPS = document.getElementById(id + '-pps');
+                this.elAPM = document.getElementById(id + '-apm');
+                this.elSent = document.getElementById(id + '-sent');
+                this.elRecv = document.getElementById(id + '-recv');
+                this.elTimer = document.getElementById(id + '-timer');
+
+                this.grid = Array.from({length: ROWS}, () => Array(COLS).fill(0));
+                this.bag = []; this.queue = []; this.holdId = null; this.canHold = true;
+                this.pendingG = 0; this.combo = -1; this.b2b = 0; this.dropCounter = 0;
+                this.dasTimer = 0; this.arrTimer = 0; this.lastMoveRotate = false;
+                
+                // STATS TRACKING
+                this.piecesPlaced = 0;
+                this.linesSentTotal = 0;
+                this.linesRecvTotal = 0;
+                
+                // RNG Placeholder
+                this.rng = new SeededRNG(12345);
+
+                for(let i=0; i<4; i++) this.queue.push(this.pull());
+                this.spawn();
+            }
+
+            initRNG(seed) {
+                // IMPORTANT: Create a fresh RNG instance per game
+                this.rng = new SeededRNG(seed);
+            }
+
+            reset() {
+                this.grid.forEach(r => r.fill(0));
+                this.bag = []; this.queue = [];
+                this.piecesPlaced=0; this.linesSentTotal=0; this.linesRecvTotal=0;
+                this.holdId = null; this.canHold = true; this.combo = -1; this.b2b = 0;
+
+                for(let i=0; i<4; i++) this.queue.push(this.pull());
+                this.spawn();
+            }
+
+            pull() { 
+                if(!this.bag.length) {
+                    this.bag=[0,1,2,3,4,5,6];
+                    // Fisher-Yates Shuffle using our SEEDED RNG
+                    for (let i = this.bag.length - 1; i > 0; i--) {
+                        const j = Math.floor(this.rng.next() * (i + 1));
+                        [this.bag[i], this.bag[j]] = [this.bag[j], this.bag[i]];
+                    }
+                } 
+                return this.bag.pop(); 
+            }
+            
+            spawn(id = this.queue.shift()) {
+                this.queue.push(this.pull());
+                this.active = { pos: {x: 0, y: 0}, matrix: PIECES[id], id: id, color: COLORS[id] };
+                this.lastMoveRotate = false;
+                if(this.collide()){ 
+                    if(gameMode === 'online' && this.id === 'p1') { socket.emit('player_lost', myRoom); document.getElementById('lose-overlay').style.display = 'block'; }
+                    else if (gameMode !== 'online') { this.grid.forEach(r => r.fill(0)); this.pendingG=0; }
+                }
+                this.drawSide(this.nCtx, this.queue);
+                if(gameMode === 'online' && this.id === 'p1') this.sendBoard();
+            }
+            sendBoard() { if(!socket) return; const display = JSON.parse(JSON.stringify(this.grid)); this.active.matrix.forEach((r,y)=>r.forEach((v,x)=>{ if(v && display[y+this.active.pos.y]) display[y+this.active.pos.y][x+this.active.pos.x] = this.active.color; })); socket.emit('update_board', { room: myRoom, grid: display }); }
+            collide(m=this.active.matrix, p=this.active.pos) { for(let y=0;y<m.length;y++) for(let x=0;x<m[y].length;x++) if(m[y][x] && (this.grid[y+p.y]===undefined || this.grid[y+p.y][x+p.x]===undefined || this.grid[y+p.y][x+p.x])) return true; return false; }
+            rotate() { const rotated = this.active.matrix[0].map((_,i)=>this.active.matrix.map(row=>row[i]).reverse()); const kicks = [0, -1, 1, -2]; for(let k of kicks) { if(!this.collide(rotated, {x:this.active.pos.x+k, y:this.active.pos.y})){ this.active.pos.x+=k; this.active.matrix=rotated; this.lastMoveRotate = true; if(gameMode === 'online' && this.id === 'p1') this.sendBoard(); return; } } }
+            checkTSpin() { if(this.active.id !== 2 || !this.lastMoveRotate) return false; let corners = 0; const p = this.active.pos; [[0,0], [2,0], [0,2], [2,2]].forEach(c => { const gx = p.x + c[0], gy = p.y + c[1]; if(gx<0 || gx>=COLS || gy>=ROWS || (gy>=0 && this.grid[gy][gx])) corners++; }); return corners >= 3; }
+            move(dir) { this.active.pos.x += dir; if(this.collide()) this.active.pos.x -= dir; else { this.lastMoveRotate = false; if(gameMode === 'online' && this.id === 'p1') this.sendBoard(); } }
+            hold() { if(!this.canHold) return; const cur = this.active.id; if(this.holdId===null){ this.holdId=cur; this.spawn(); } else { const t=this.holdId; this.holdId=cur; this.spawn(t); } this.canHold=false; this.drawSide(this.hCtx, [this.holdId]); }
+            hardDrop() { while(!this.collide()) this.active.pos.y++; this.active.pos.y--; this.lock(); }
+            
+            lock() {
+                const isTSpin = this.checkTSpin();
+                this.active.matrix.forEach((r,y)=>r.forEach((v,x)=>{ if(v) this.grid[y+this.active.pos.y][x+this.active.pos.x]=this.active.color; }));
+                this.piecesPlaced++; 
+                this.sweep(isTSpin); this.canHold=true; this.spawn();
+            }
+
+            sweep(isTSpin) {
+                let lines=0, isPC=true;
+                for(let y=ROWS-1;y>=0;y--) { if(this.grid[y].every(v=>v!==0)){ this.grid.splice(y,1); this.grid.unshift(Array(COLS).fill(0)); lines++; y++; } else if(this.grid[y].some(v=>v!==0)) isPC=false; }
+                
+                if(lines>0) {
+                    this.combo++; this.flash();
+                    let atk = 0;
+                    
+                    // CLEAR TEXT LOGIC
+                    let txt = "";
+                    if (isTSpin) {
+                        txt = (lines===1)?"T-SPIN SINGLE":(lines===2)?"T-SPIN DOUBLE":"T-SPIN TRIPLE";
+                        atk = (lines===1)?2:(lines===2)?4:6;
+                    } else {
+                        txt = (lines===1)?"SINGLE":(lines===2)?"DOUBLE":(lines===3)?"TRIPLE":"QUAD";
+                        atk = (lines===4)?4:(lines-1);
+                    }
+                    if(isPC) { txt = "ALL CLEAR"; atk+=10; }
+                    this.showText(this.aText, txt);
+
+                    if(lines===4 || isTSpin) { this.b2b++; if(this.b2b>1){ atk+=1; this.showText(this.bText, "B2B x"+(this.b2b-1)); } } else this.b2b=0;
+                    if(this.combo>0) { atk += Math.floor((this.combo-1)/2); this.showText(this.cText, this.combo+" COMBO"); }
+
+                    if(gameMode === 'local' || (gameMode === 'online' && this.id === 'p1')) {
+                        let target = (this.id === 'p1') ? (gameMode==='online'?null:p2) : p1;
+                        if(this.pendingG > 0) { let c=Math.min(this.pendingG, atk); this.pendingG-=c; atk-=c; }
+                        if(atk > 0) {
+                            this.linesSentTotal += atk; // Track Stat
+                            if(target) target.receiveGarbage(atk);
+                            if(gameMode === 'online' && socket) socket.emit('send_garbage', {room:myRoom, amount:atk});
+                        }
+                    }
+                    this.gBar.style.height = (this.pendingG*30)+'px';
+                } else {
+                    this.combo = -1;
+                    if(gameMode !== 'zen') {
+                        while(this.pendingG>0) {
+                            this.pendingG--;
+                            let r=Array(COLS).fill('#555'); r[Math.floor(Math.random()*COLS)]=0;
+                            this.grid.shift(); this.grid.push(r);
+                        }
+                    }
+                    this.gBar.style.height = (this.pendingG*30)+'px';
+                }
+            }
+
+            receiveGarbage(amt) {
+                this.pendingG += amt;
+                this.linesRecvTotal += amt;
+                this.gBar.style.height = (this.pendingG * 30) + 'px';
+            }
+
+            updateStats() {
+                const now = Date.now();
+                const seconds = (now - startTime) / 1000;
+                
+                // PPS
+                const pps = (seconds > 0) ? (this.piecesPlaced / seconds).toFixed(2) : "0.00";
+                this.elPPS.innerText = pps;
+
+                // APM
+                const apm = (seconds > 0) ? Math.floor((this.linesSentTotal / seconds) * 60) : 0;
+                this.elAPM.innerText = apm;
+
+                // Sent/Recv
+                this.elSent.innerText = this.linesSentTotal;
+                this.elRecv.innerText = this.linesRecvTotal;
+
+                // Timer
+                const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+                const s = Math.floor(seconds % 60).toString().padStart(2, '0');
+                this.elTimer.innerText = `${m}:${s}`;
+            }
+
+            flash(){ this.flashEl.style.opacity=0.6; setTimeout(()=>this.flashEl.style.opacity=0, 60); }
+            showText(el, msg) { el.innerText = msg; el.style.opacity = 1; setTimeout(()=>el.style.opacity=0, 1000); }
+            drawSide(ctx, ids) { ctx.fillStyle='#000'; ctx.fillRect(0,0,60,180); ids.forEach((id,i)=>{ if(id!==null){ ctx.fillStyle=COLORS[id]; PIECES[id].forEach((r,y)=>r.forEach((v,x)=>{ if(v) ctx.fillRect(x*12+8, y*12+i*50+10, 11, 11); })); }}); }
+            
+            updateInputs(dt) {
+                const c = controls[this.id];
+                const left = keysHeld.has(c.left);
+                const right = keysHeld.has(c.right);
+                if(left || right) {
+                    const dir = left ? -1 : 1;
+                    if(this.dasDir !== dir) { this.dasDir = dir; this.dasTimer = 0; } 
+                    else {
+                        this.dasTimer += dt;
+                        if(this.dasTimer > 130) { 
+                            this.arrTimer += dt;
+                            if(this.arrTimer > 0) { this.move(dir); this.arrTimer = 0; }
+                        }
+                    }
+                } else { this.dasDir = null; }
+                if(keysHeld.has(c.soft)) { this.active.pos.y++; if(this.collide()) this.active.pos.y--; else this.lastMoveRotate = false; }
+            }
+
+            draw() {
+                this.ctx.fillStyle='#000'; this.ctx.fillRect(0,0,120,780);
+                this.grid.forEach((r,y)=>r.forEach((v,x)=>{ if(v){ this.ctx.fillStyle=v; this.ctx.fillRect(x*B_SIZE, y*B_SIZE, B_SIZE-1, B_SIZE-1); }}));
+                let g={...this.active.pos}; while(!this.collide(this.active.matrix,g)) g.y++; g.y--;
+                this.ctx.fillStyle='rgba(255,255,255,0.15)';
+                this.active.matrix.forEach((r,y)=>r.forEach((v,x)=>{ if(v) this.ctx.fillRect((g.x+x)*B_SIZE, (g.y+y)*B_SIZE, B_SIZE-1, B_SIZE-1); }));
+                this.ctx.fillStyle=this.active.color;
+                this.active.matrix.forEach((r,y)=>r.forEach((v,x)=>{ if(v) this.ctx.fillRect((this.active.pos.x+x)*B_SIZE, (this.active.pos.y+y)*B_SIZE, B_SIZE-1, B_SIZE-1); }));
+            }
+        }
+
+        const p1 = new Player('p1', 'p1-n', 'p1-h', 'p1-g', 'p1-combo', 'p1-flash', 'p1-b2b', 'p1-spin');
+        const p2 = new Player('p2', 'p2-n', 'p2-h', 'p2-g', 'p2-combo', 'p2-flash', 'p2-b2b', 'p2-spin');
+
+        let lastTime = 0;
+        function loop(time = 0) {
+            const dt = time - lastTime; lastTime = time;
+            if(gameActive) [p1, p2].forEach(p => { 
+                if(gameMode === 'zen' && p.id === 'p2') return;
+                if(gameMode === 'online' && p.id === 'p2') return;
+
+                p.updateStats(); // Update dashboard
+                p.updateInputs(dt);
+                p.dropCounter += dt; 
+                if(p.dropCounter > 700) { 
+                    p.active.pos.y++; 
+                    if(p.collide()){p.active.pos.y--; p.lock();} else { p.lastMoveRotate=false; } 
+                    p.dropCounter=0; 
+                    if(gameMode==='online' && p.id==='p1') p.sendBoard();
+                }
+                p.draw(); 
+            });
+            requestAnimationFrame(loop);
+        }
+    </script>
+</body>
+</html>

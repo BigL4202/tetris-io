@@ -2,31 +2,48 @@
 <html>
 <head>
     <title>Student Learning Portal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
         body { background: #050505; color: #fff; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; overflow: hidden; }
         
         /* MENUS */
         #menu-container { position: absolute; z-index: 100; background: rgba(0,0,0,0.98); width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .screen { display: none; flex-direction: column; align-items: center; width: 100%; max-width: 600px; }
+        .screen { display: none; flex-direction: column; align-items: center; width: 100%; max-width: 900px; }
         .active { display: flex; }
         
-        h1 { font-size: 50px; margin-bottom: 20px; text-shadow: 0 0 20px rgba(0,255,204,0.3); letter-spacing: 3px; }
-        .input-std { background: #222; border: 1px solid #444; color: #fff; padding: 12px; font-size: 18px; border-radius: 5px; margin: 10px 0; width: 300px; text-align: center; }
+        h1 { font-size: 50px; margin-bottom: 20px; text-shadow: 0 0 20px rgba(0,255,204,0.3); letter-spacing: 3px; text-align: center; }
+        
+        .input-std { background: #222; border: 1px solid #444; color: #fff; padding: 12px; font-size: 18px; border-radius: 5px; margin: 5px 0; width: 300px; text-align: center; transition: 0.2s; }
+        .input-std:focus { border-color: #00ffcc; outline: none; background: #333; }
+        
         .btn { padding: 15px 40px; font-size: 18px; cursor: pointer; border: none; font-weight: bold; border-radius: 6px; margin: 10px; width: 280px; text-transform: uppercase; transition: 0.2s; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
         .btn:hover { transform: scale(1.05); filter: brightness(1.2); }
+        .btn-green { background: #00ffcc; color: #000; }
         .btn-zen { background: #a29bfe; color: #000; }
-        .btn-duel { background: #00a8ff; color: #fff; }
+        .btn-apm { background: #ff5555; color: #fff; }
         .btn-ffa { background: #ff9900; color: #000; }
-        
-        /* HUD & STATS */
-        #home-btn { position: absolute; top: 15px; left: 15px; z-index: 200; padding: 10px 20px; background: #ff0055; color: #fff; border: none; font-weight: bold; cursor: pointer; border-radius: 4px; box-shadow: 0 0 10px rgba(255,0,85,0.5); }
-        .stats-row { display: flex; gap: 15px; margin-bottom: 10px; }
-        .stat-box { background: #111; border: 1px solid #333; padding: 5px 15px; border-radius: 4px; text-align: center; min-width: 70px; }
-        .stat-label { font-size: 10px; color: #888; letter-spacing: 1px; }
-        .stat-val { font-size: 16px; font-weight: bold; color: #fff; font-family: monospace; }
 
-        /* GAME LAYOUT */
-        .game-area { display: flex; gap: 40px; transform: scale(0.95); transition: 0.5s; width: 100%; justify-content: center; }
+        /* SPLIT LAYOUT */
+        #main-split { display: flex; flex-direction: row; gap: 50px; align-items: flex-start; margin-top: 20px; }
+        .menu-left { display: flex; flex-direction: column; align-items: center; }
+        .menu-right { width: 320px; background: #111; border: 1px solid #333; border-radius: 8px; padding: 15px; max-height: 500px; overflow-y: auto; }
+        
+        .user-info { margin-bottom: 20px; font-size: 20px; color: #aaa; text-align: center; border-bottom: 1px solid #333; padding-bottom: 10px; width: 100%; line-height: 1.6; }
+        .user-info span { color: #fff; font-weight: bold; }
+        .stat-highlight { color: #ffcc00; font-weight: bold; }
+        .stat-highlight-apm { color: #ff5555; font-weight: bold; }
+
+        /* LEADERBOARDS */
+        h3 { margin: 20px 0 10px 0; color: #00ffcc; text-align: center; border-bottom: 1px solid #333; padding-bottom: 5px; font-size: 16px; }
+        h3:first-child { margin-top: 0; }
+        .lb-list { width: 100%; font-family: monospace; font-size: 14px; }
+        .lb-item { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #222; }
+        .lb-item:first-child { color: #ffcc00; font-weight: bold; } 
+        
+        /* GAME AREA */
+        .game-area { display: flex; gap: 40px; transform: scale(0.8); transition: 0.5s; width: 100%; justify-content: center; }
+        @media (max-height: 900px) { .game-area { transform: scale(0.7); } }
+        
         .player-root { display: flex; flex-direction: column; align-items: center; }
         .player-container { display: flex; align-items: flex-end; gap: 10px; position: relative; }
         .main-board-wrap { position: relative; border: 4px solid #333; background: #000; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
@@ -36,22 +53,33 @@
         .garbage-fill { position: absolute; bottom: 0; width: 100%; background: #ff0033; transition: height 0.2s; }
         canvas { display: block; }
 
-        /* POPUPS */
-        .float-text { position: absolute; left: 50%; transform: translateX(-50%); font-weight: 900; opacity: 0; pointer-events: none; transition: 0.1s; text-align: center; width: 300px; text-shadow: 0 4px 8px rgba(0,0,0,0.9); font-style: italic; z-index: 50; }
-        .action-text { top: 250px; font-size: 36px; color: #fff; letter-spacing: 2px; }
-        .combo-text { top: 200px; font-size: 28px; color: #ffcc00; }
-        .b2b-text { top: 160px; font-size: 18px; color: #00ffcc; letter-spacing: 2px; }
+        /* HUD & OVERLAYS */
+        #home-btn { position: absolute; top: 15px; left: 15px; z-index: 200; padding: 10px 20px; background: #ff0055; color: #fff; border: none; font-weight: bold; cursor: pointer; border-radius: 4px; box-shadow: 0 0 10px rgba(255,0,85,0.5); }
+        .stats-row { display: flex; gap: 15px; margin-bottom: 10px; }
+        .stat-box { background: #111; border: 1px solid #333; padding: 5px 15px; border-radius: 4px; text-align: center; min-width: 70px; }
+        .stat-label { font-size: 10px; color: #888; letter-spacing: 1px; }
+        .stat-val { font-size: 16px; font-weight: bold; color: #fff; font-family: monospace; }
 
-        /* FFA GRID */
-        #ffa-grid { display: flex; gap: 10px; justify-content: center; opacity: 0; transition: opacity 0.5s; flex-wrap: wrap; max-width: 600px; }
-        .mini-card { background: #111; padding: 2px; border: 1px solid #333; text-align: center; }
-
-        /* OVERLAYS */
         .overlay { position: absolute; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 150; display: flex; justify-content: center; align-items: center; flex-direction: column; pointer-events: none; }
         .hidden { display: none !important; }
         #cnt-txt { font-size: 120px; font-weight: 900; color: #fff; animation: pop 0.5s infinite alternate; }
         #win-txt { font-size: 60px; font-weight: 900; color: #00ffcc; text-shadow: 0 0 30px #00ffcc; }
         .sub-txt { font-size: 24px; color: #fff; margin-top: 10px; }
+        
+        /* CHAT */
+        #chat-container { position: absolute; bottom: 20px; right: 20px; width: 300px; height: 250px; display: flex; flex-direction: column; z-index: 300; pointer-events: auto; }
+        #chat-history { flex: 1; overflow-y: auto; background: rgba(0,0,0,0.8); border: 1px solid #333; padding: 5px; margin-bottom: 5px; font-size: 12px; font-family: monospace; border-radius: 4px; }
+        #chat-input { background: #222; border: 1px solid #444; color: #fff; padding: 5px; width: 100%; box-sizing: border-box; border-radius: 4px; }
+        .chat-line { margin-bottom: 2px; word-wrap: break-word; }
+        .chat-user { font-weight: bold; color: #00ffcc; }
+
+        .float-text { position: absolute; left: 50%; transform: translateX(-50%); font-weight: 900; opacity: 0; pointer-events: none; transition: 0.1s; text-align: center; width: 300px; text-shadow: 0 4px 8px rgba(0,0,0,0.9); font-style: italic; z-index: 50; }
+        .action-text { top: 250px; font-size: 36px; color: #fff; letter-spacing: 2px; }
+        .combo-text { top: 200px; font-size: 28px; color: #ffcc00; }
+        .b2b-text { top: 160px; font-size: 18px; color: #00ffcc; letter-spacing: 2px; }
+
+        #ffa-grid { display: flex; gap: 10px; justify-content: center; opacity: 0; transition: opacity 0.5s; flex-wrap: wrap; max-width: 600px; }
+        .mini-card { background: #111; padding: 2px; border: 1px solid #333; text-align: center; }
         
         #kill-feed { position: absolute; bottom: 20px; left: 20px; width: 300px; display: flex; flex-direction: column; gap: 5px; pointer-events: none; z-index: 100; }
         .feed-msg { background: rgba(255,0,0,0.2); color: #ff5555; padding: 5px; border-left: 3px solid #ff5555; font-family: monospace; }
@@ -65,14 +93,47 @@
     <button id="home-btn" class="hidden" onclick="goHome()">HOME</button>
 
     <div id="menu-container">
-        <div id="scr-main" class="screen active">
+        
+        <div id="scr-login" class="screen active">
+            <h1>PROJECT <span style="color:#00ffcc">ASMONDY</span></h1>
+            <p style="color:#888; margin-bottom:10px;">STUDENT LOGIN</p>
+            
+            <input type="text" id="username" class="input-std" placeholder="USERNAME" maxlength="12" oninput="saveCreds()">
+            <input type="password" id="password" class="input-std" placeholder="PASSWORD" oninput="saveCreds()">
+            <button class="btn btn-green" onclick="attemptLogin()">LOGIN / REGISTER</button>
+        </div>
+
+        <div id="scr-main" class="screen">
             <h1>PROJECT <span style="color:#00ffcc">ASMONDY</span></h1>
             
-            <input type="text" id="username" class="input-std" placeholder="ENTER USERNAME" maxlength="12">
-            <button class="btn btn-zen" onclick="startZen()">ZEN MODE</button>
-            <button class="btn btn-duel" onclick="joinDuel()">ONLINE DUEL (QUEUE)</button>
-            <button class="btn btn-ffa" onclick="joinFFA()">ONLINE FFA (LOBBY)</button>
+            <div id="main-split">
+                <div class="menu-left">
+                    <div class="user-info">
+                        Welcome, <span id="display-user">Guest</span><br>
+                        Your Wins: <span id="display-wins" class="stat-highlight">0</span><br>
+                        Best APM: <span id="display-apm" class="stat-highlight-apm">0</span>
+                    </div>
+                    
+                    <button class="btn btn-zen" onclick="startZen()">ZEN MODE</button>
+                    <button class="btn btn-apm" onclick="startAPMTest()">APM TEST</button>
+                    <button class="btn btn-ffa" onclick="joinFFA()">ONLINE FFA</button>
+                    <button class="btn" style="background:#333; color:#aaa; font-size:14px;" onclick="logOut()">LOGOUT</button>
+                </div>
+
+                <div class="menu-right">
+                    <h3>ONLINE WIN LEADERBOARD</h3>
+                    <div id="lb-wins" class="lb-list">
+                        <div style="text-align:center; color:#666;">Loading...</div>
+                    </div>
+
+                    <h3>HIGHEST APM SCORES</h3>
+                    <div id="lb-apm" class="lb-list">
+                        <div style="text-align:center; color:#666;">Loading...</div>
+                    </div>
+                </div>
+            </div>
         </div>
+
         <div id="scr-wait" class="screen">
             <h2 id="wait-msg">JOINING...</h2>
             <div id="lobby-count" style="color:#888; margin-top:10px;"></div>
@@ -87,6 +148,10 @@
     </div>
     
     <div id="kill-feed"></div>
+    <div id="chat-container" class="hidden">
+        <div id="chat-history"></div>
+        <input type="text" id="chat-input" placeholder="Chat here..." onkeydown="sendChat(event)">
+    </div>
 
     <div id="game-ui" class="game-area hidden">
         <div id="p1-root" class="player-root">
@@ -102,7 +167,6 @@
                     <div class="side-box" style="height:80px">HOLD<canvas id="p1-h" width="60" height="50"></canvas></div>
                     <div class="side-box">SENT<div id="s-sent" class="stat-val">0</div></div>
                     <div class="side-box">RECV<div id="s-recv" class="stat-val">0</div></div>
-                    
                     <div id="pop-action" class="float-text action-text">QUAD</div>
                     <div id="pop-combo" class="float-text combo-text">2 COMBO</div>
                     <div id="pop-b2b" class="float-text b2b-text">B2B</div>
@@ -114,70 +178,163 @@
                 <div class="side-col"><div class="side-box" style="height:200px">NEXT<canvas id="p1-n" width="60" height="180"></canvas></div></div>
             </div>
         </div>
-        
         <div id="ffa-grid"></div>
     </div>
 
     <script>
-        // --- CONSTANTS ---
         const COLS=4, ROWS=26, B_SIZE=30;
         const PIECES=[[[1,1,1,1]],[[1,1],[1,1]],[[0,1,0],[1,1,1]],[[1,1,0],[0,1,1]],[[0,1,1],[1,1,0]],[[1,0,0],[1,1,1]],[[0,0,1],[1,1,1]]];
         const COLORS=['#31C7EF','#F7D308','#FF69B4','#EF2029','#42B642','#9D00FF','#EF7921'];
 
-        // --- GLOBAL STATE ---
         let socket=null, gameActive=false, inputLocked=false, isSpectator=false;
-        let gameMode='zen'; // zen, duel, ffa
-        let startTime=0;
+        let gameMode='zen', startTime=0, apmTimer=null;
+        
+        window.onload = function() {
+            if(localStorage.getItem('savedUser')) document.getElementById('username').value = localStorage.getItem('savedUser');
+            if(localStorage.getItem('savedPass')) document.getElementById('password').value = localStorage.getItem('savedPass');
+        };
 
-        // --- NAVIGATION ---
+        function saveCreds() {
+            localStorage.setItem('savedUser', document.getElementById('username').value);
+            localStorage.setItem('savedPass', document.getElementById('password').value);
+        }
+
         function navTo(id) {
             document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
         }
-        function goHome() { location.reload(); }
-        function getUser() { return document.getElementById('username').value.trim() || "Player"; }
 
-        // --- GAME STARTUP ---
-        function startZen() {
-            gameMode='zen';
-            document.getElementById('menu-container').style.display = 'none';
-            document.getElementById('game-ui').classList.remove('hidden');
-            document.getElementById('home-btn').classList.remove('hidden');
-            
-            p1.initRNG(Math.random()*99999);
-            p1.reset();
-            gameActive = true;
-            loop();
+        function logOut() {
+            localStorage.clear();
+            document.getElementById('chat-container').classList.add('hidden'); 
+            location.reload();
         }
 
-        function joinDuel() {
-            if(typeof io==='undefined') return alert("Host online for Duel.");
-            connect();
-            navTo('scr-wait');
-            document.getElementById('wait-msg').innerText = "SEARCHING FOR OPPONENT...";
-            socket.emit('join_duel_queue', getUser());
+        function attemptLogin() {
+            const user = document.getElementById('username').value.trim();
+            const pass = document.getElementById('password').value.trim();
+            if(!user || !pass) return alert("Please enter Username and Password.");
+            if(!socket) connect();
+            socket.emit('login_attempt', { username: user, password: pass });
+        }
+
+        function goHome() {
+            gameActive = false;
+            clearTimeout(apmTimer);
+            document.getElementById('game-ui').classList.add('hidden');
+            document.getElementById('home-btn').classList.add('hidden');
+            document.getElementById('kill-feed').innerHTML = '';
+            document.querySelectorAll('.overlay').forEach(el => el.classList.add('hidden'));
+            document.getElementById('menu-container').style.display = 'flex';
+            navTo('scr-main');
+        }
+
+        function getUser() { return document.getElementById('username').value.trim(); }
+
+        // --- GAME MODES ---
+        function startZen() {
+            gameMode='zen';
+            setupGameUI();
+            p1.initRNG(Math.random()*999); p1.reset(); 
+            gameActive = true; loop();
+        }
+
+        function startAPMTest() {
+            gameMode='apm_test';
+            setupGameUI();
+            p1.initRNG(Math.random()*999); p1.reset();
+            gameActive = true; loop();
+            apmTimer = setTimeout(() => {
+                gameActive = false;
+                const finalAPM = p1.elAPM.innerText;
+                const winOver = document.getElementById('overlay-win');
+                winOver.classList.remove('hidden');
+                document.getElementById('win-txt').innerText = "FINISHED!";
+                winOver.querySelector('.sub-txt').innerText = `FINAL APM: ${finalAPM}`;
+                if(socket) socket.emit('submit_apm', finalAPM);
+                setTimeout(goHome, 3000);
+            }, 60000);
         }
 
         function joinFFA() {
-            if(typeof io==='undefined') return alert("Host online for FFA.");
-            connect();
             navTo('scr-wait');
             document.getElementById('wait-msg').innerText = "JOINING FFA LOBBY...";
-            socket.emit('join_ffa', getUser());
+            socket.emit('join_ffa');
         }
 
-        // --- SOCKET LOGIC ---
+        function setupGameUI() {
+            document.getElementById('menu-container').style.display = 'none';
+            document.getElementById('game-ui').classList.remove('hidden');
+            document.getElementById('home-btn').classList.remove('hidden');
+        }
+
+        function sendChat(e) {
+            if(e.key === 'Enter') {
+                const input = document.getElementById('chat-input');
+                const txt = input.value.trim();
+                if(txt && socket) {
+                    socket.emit('send_chat', txt);
+                    input.value = '';
+                }
+            }
+        }
+
+        // --- SOCKETS ---
         function connect() {
             if(socket) return;
             socket = io();
 
+            socket.on('login_response', data => {
+                if(data.success) {
+                    navTo('scr-main');
+                    document.getElementById('display-user').innerText = data.username.toUpperCase();
+                    document.getElementById('display-wins').innerText = data.wins;
+                    document.getElementById('display-apm').innerText = data.bestAPM;
+                    document.getElementById('chat-container').classList.remove('hidden'); // Show Chat on Login
+                } else {
+                    alert(data.msg);
+                }
+            });
+
+            socket.on('leaderboard_update', data => {
+                // Wins
+                const winDiv = document.getElementById('lb-wins');
+                winDiv.innerHTML = '';
+                data.wins.forEach((p, i) => {
+                    winDiv.innerHTML += `<div class="lb-item"><span>${i+1}. ${p.name}</span> <span>${p.val} W</span></div>`;
+                });
+                
+                // APM
+                const apmDiv = document.getElementById('lb-apm');
+                apmDiv.innerHTML = '';
+                data.apm.forEach((p, i) => {
+                    apmDiv.innerHTML += `<div class="lb-item"><span>${i+1}. ${p.name}</span> <span>${p.score}</span></div>`;
+                });
+            });
+
+            socket.on('update_my_wins', wins => {
+                document.getElementById('display-wins').innerText = wins;
+            });
+            
+            socket.on('update_my_apm', score => {
+                document.getElementById('display-apm').innerText = score;
+            });
+
             socket.on('lobby_update', data => {
                 document.getElementById('wait-msg').innerText = "WAITING FOR PLAYERS...";
                 document.getElementById('lobby-count').innerText = data.count + " In Lobby (Need 2 to start)";
+                document.getElementById('chat-container').classList.remove('hidden');
+            });
+
+            socket.on('receive_chat', data => {
+                const box = document.getElementById('chat-history');
+                box.innerHTML += `<div class="chat-line"><span class="chat-user">${data.user}:</span> ${data.text}</div>`;
+                box.scrollTop = box.scrollHeight;
             });
 
             socket.on('ffa_spectate', data => {
                 document.getElementById('wait-msg').innerText = "MATCH IN PROGRESS. SPECTATING...";
+                document.getElementById('chat-container').classList.remove('hidden');
                 setTimeout(() => {
                     isSpectator = true;
                     gameMode = 'ffa';
@@ -186,19 +343,15 @@
             });
 
             socket.on('start_countdown', data => {
-                document.getElementById('menu-container').style.display='none';
-                document.getElementById('game-ui').classList.remove('hidden');
-                document.getElementById('home-btn').classList.remove('hidden');
+                setupGameUI();
                 document.getElementById('overlay-win').classList.add('hidden');
-                
+                document.getElementById('chat-container').classList.remove('hidden');
                 const ov = document.getElementById('overlay-cnt');
                 const tx = document.getElementById('cnt-txt');
                 ov.classList.remove('hidden');
-                
                 let n = data.duration;
                 tx.innerText = n;
                 inputLocked = true;
-                
                 const iv = setInterval(()=>{
                     n--;
                     if(n>0) tx.innerText = n;
@@ -226,17 +379,13 @@
             socket.on('lobby_reset', () => { alert("Not enough players."); goHome(); });
         }
 
-        // --- GAME ENGINE ---
+        // --- ENGINE ---
         function setupOnlineGame(seed, players) {
             gameActive = true;
-            startTime = Date.now();
-            
             p1.initRNG(seed);
             p1.reset();
-            
             const grid = document.getElementById('ffa-grid');
             grid.innerHTML = '';
-            
             players.forEach(p => {
                 if(p.id !== socket.id) {
                     const d = document.createElement('div');
@@ -245,7 +394,6 @@
                     grid.appendChild(d);
                 }
             });
-            
             if(isSpectator) {
                 document.getElementById('p1-root').style.opacity = '0.3';
                 feed("SPECTATING MODE");
@@ -271,7 +419,7 @@
             f.appendChild(d); setTimeout(()=>d.remove(),4000);
         }
 
-        // --- PLAYER CLASS ---
+        // --- PLAYER ---
         class SeededRNG { constructor(s){this.s=s;} next(){this.s=(this.s*9301+49297)%233280;return this.s/233280;} }
         
         class Player {
@@ -280,13 +428,11 @@
                 this.nCtx=document.getElementById('p1-n').getContext('2d');
                 this.hCtx=document.getElementById('p1-h').getContext('2d');
                 this.gBar=document.getElementById('p1-g');
-                // Stats Elements
                 this.elSent=document.getElementById('s-sent');
                 this.elRecv=document.getElementById('s-recv');
                 this.elTime=document.getElementById('s-time');
                 this.elPPS=document.getElementById('s-pps');
                 this.elAPM=document.getElementById('s-apm');
-                // Popup Elements
                 this.popAct=document.getElementById('pop-action');
                 this.popCmbo=document.getElementById('pop-combo');
                 this.popB2B=document.getElementById('pop-b2b');
@@ -297,12 +443,14 @@
                 this.dropCounter=0; this.lockTimer=0; this.dasTimer=0; this.arrTimer=0;
                 this.piecesPlaced=0; this.linesSentTotal=0; this.linesRecvTotal=0;
                 this.rng=new SeededRNG(1);
+                this.startTime = Date.now();
             }
             initRNG(s){this.rng=new SeededRNG(s);}
             reset(){ 
                 this.grid.forEach(r=>r.fill(0)); 
                 this.bag=[]; this.queue=[]; 
                 this.piecesPlaced=0; this.linesSentTotal=0; this.linesRecvTotal=0; this.pendingG=0;
+                this.startTime = Date.now();
                 for(let i=0;i<4;i++)this.queue.push(this.pull()); 
                 this.spawn(); 
             }
@@ -314,7 +462,7 @@
                 this.lastMoveRotate=false;
                 this.lockTimer = 0;
                 if(this.collide()){
-                    if(gameMode !== 'zen' && socket) {
+                    if(gameMode !== 'zen' && gameMode !== 'apm_test' && socket) {
                         socket.emit('player_died');
                         isSpectator=true;
                         document.getElementById('p1-root').style.opacity='0.3';
@@ -325,47 +473,41 @@
                 this.drawSide(this.nCtx,this.queue); this.sendBoard();
             }
 
-            // PHYSICS with LOCK DELAY
-            collide(m=this.active.matrix,p=this.active.pos){ for(let y=0;y<m.length;y++)for(let x=0;x<m[y].length;x++)if(m[y][x]&&(this.grid[y+p.y]===undefined||this.grid[y+p.y][x+p.x]===undefined||this.grid[y+p.y][x+p.x]))return true; return false; }
-            
+            collide(m=this.active.matrix, p=this.active.pos) {
+                for(let y=0; y<m.length; y++) {
+                    for(let x=0; x<m[y].length; x++) {
+                        if(m[y][x]) {
+                            const gx = x + p.x;
+                            const gy = y + p.y;
+                            if (gx < 0 || gx >= COLS || gy >= ROWS) return true;
+                            if (gy >= 0 && this.grid[gy][gx]) return true;
+                        }
+                    }
+                }
+                return false;
+            }
             rotate(){ 
                 const r=this.active.matrix[0].map((_,i)=>this.active.matrix.map(row=>row[i]).reverse()); 
                 const k=[0,-1,1,-2]; 
                 for(let i of k) if(!this.collide(r,{x:this.active.pos.x+i,y:this.active.pos.y})){
-                    this.active.pos.x+=i;
-                    this.active.matrix=r;
-                    this.lastMoveRotate=true;
-                    if(this.isGrounded()) this.lockTimer=0; // Reset lock delay
-                    this.sendBoard();
-                    return;
+                    this.active.pos.x+=i; this.active.matrix=r; this.lastMoveRotate=true;
+                    if(this.isGrounded()) this.lockTimer=0; 
+                    this.sendBoard(); return;
                 } 
             }
-            
             move(d){ 
                 this.active.pos.x+=d; 
                 if(this.collide()) this.active.pos.x-=d; 
-                else { 
-                    this.lastMoveRotate=false; 
-                    if(this.isGrounded()) this.lockTimer=0; // Reset lock delay
-                    this.sendBoard(); 
-                } 
+                else { this.lastMoveRotate=false; if(this.isGrounded()) this.lockTimer=0; this.sendBoard(); } 
             }
-            
-            isGrounded() {
-                this.active.pos.y++;
-                const hit = this.collide();
-                this.active.pos.y--;
-                return hit;
-            }
-
+            isGrounded() { this.active.pos.y++; const hit=this.collide(); this.active.pos.y--; return hit; }
             hardDrop(){ while(!this.collide())this.active.pos.y++; this.active.pos.y--; this.lock(); }
             hold(){ if(!this.canHold)return; const c=this.active.id; if(this.holdId===null){this.holdId=c;this.spawn();}else{const t=this.holdId;this.holdId=c;this.spawn(t);} this.canHold=false; this.drawSide(this.hCtx,[this.holdId]); }
-            
-            checkTSpin() { if(this.active.id!==2||!this.lastMoveRotate)return false; let c=0; const p=this.active.pos; [[0,0],[2,0],[0,2],[2,2]].forEach(o=>{const gx=p.x+o[0],gy=p.y+o[1]; if(gx<0||gx>=COLS||gy>=ROWS||(gy>=0&&this.grid[gy][gx]))c++;}); return c>=3; }
+            checkTSpin() { return false; } 
 
             lock(){
                 const isTSpin = this.checkTSpin();
-                this.active.matrix.forEach((r,y)=>r.forEach((v,x)=>{if(v)this.grid[y+this.active.pos.y][x+this.active.pos.x]=this.active.color;}));
+                this.active.matrix.forEach((r,y)=>r.forEach((v,x)=>{ if(v) { const gy=y+this.active.pos.y; if(gy>=0) this.grid[gy][x+this.active.pos.x]=this.active.color; } }));
                 this.piecesPlaced++;
                 this.sweep(isTSpin); this.canHold=true; this.spawn();
             }
@@ -377,20 +519,14 @@
                 if(lines>0){
                     this.combo++;
                     let atk=0, txt="";
-                    if(isTSpin){ txt=(lines==1)?"T-SPIN SINGLE":(lines==2)?"T-SPIN DOUBLE":"T-SPIN TRIPLE"; atk=(lines==1)?2:(lines==2)?4:6; }
-                    else { txt=(lines==1)?"SINGLE":(lines==2)?"DOUBLE":(lines==3)?"TRIPLE":"QUAD"; atk=(lines==4)?4:(lines-1); }
+                    txt=(lines==1)?"SINGLE":(lines==2)?"DOUBLE":(lines==3)?"TRIPLE":"QUAD"; atk=(lines==4)?4:(lines-1); 
                     if(isPC){ txt="ALL CLEAR"; atk+=10; }
                     this.showText(this.popAct, txt);
-
-                    if(lines==4||isTSpin){ this.b2b++; if(this.b2b>1){atk+=1; this.showText(this.popB2B, "B2B x"+(this.b2b-1));} } else this.b2b=0;
+                    if(lines==4){ this.b2b++; if(this.b2b>1){atk+=1; this.showText(this.popB2B, "B2B x"+(this.b2b-1));} } else this.b2b=0;
                     if(this.combo>0){ atk+=Math.floor((this.combo-1)/2); this.showText(this.popCmbo, this.combo+" COMBO"); }
-
-                    // Send Trash
                     if(this.pendingG>0){ let c=Math.min(this.pendingG,atk); this.pendingG-=c; atk-=c; }
-                    if(atk>0 && gameMode!=='zen'){ 
-                        this.linesSentTotal+=atk; 
-                        if(socket && !isSpectator) socket.emit('send_garbage', {mode:gameMode, amount:atk}); 
-                    }
+                    this.linesSentTotal+=atk; 
+                    if(atk>0 && (gameMode === 'ffa')){ if(socket && !isSpectator) socket.emit('send_garbage', {mode:gameMode, amount:atk}); }
                 } else {
                     this.combo=-1;
                     while(this.pendingG>0){ this.pendingG--; const r=Array(COLS).fill('#555'); r[Math.floor(Math.random()*COLS)]=0; this.grid.shift(); this.grid.push(r); }
@@ -402,12 +538,18 @@
             receiveGarbage(n){ this.pendingG+=n; this.linesRecvTotal+=n; this.gBar.style.height=(this.pendingG*30)+'px'; this.updateStats(); }
             
             updateStats(){
-                const sec = (Date.now()-startTime)/1000;
+                const sec = (Date.now() - this.startTime) / 1000;
+                
                 this.elSent.innerText = this.linesSentTotal;
                 this.elRecv.innerText = this.linesRecvTotal;
                 this.elPPS.innerText = (sec>0 ? (this.piecesPlaced/sec).toFixed(2) : "0.00");
                 this.elAPM.innerText = (sec>0 ? Math.floor((this.linesSentTotal/sec)*60) : 0);
-                const m=Math.floor(sec/60).toString().padStart(2,'0'), s=Math.floor(sec%60).toString().padStart(2,'0');
+                
+                let displaySec = sec;
+                if(gameMode === 'apm_test') displaySec = 60 - sec; 
+                if(displaySec < 0) displaySec = 0;
+                const m=Math.floor(displaySec/60).toString().padStart(2,'0');
+                const s=Math.floor(displaySec%60).toString().padStart(2,'0');
                 this.elTime.innerText = `${m}:${s}`;
             }
 
@@ -416,26 +558,13 @@
             drawSide(ctx,ids){ ctx.fillStyle='#000'; ctx.fillRect(0,0,60,180); ids.forEach((id,i)=>{if(id!==null){ctx.fillStyle=COLORS[id]; PIECES[id].forEach((r,y)=>r.forEach((v,x)=>{if(v)ctx.fillRect(x*12+8,y*12+i*50+10,11,11);}));}}); }
             
             update(dt){
-                // Gravity
                 this.dropCounter+=dt;
                 if(this.dropCounter > 700) {
                     this.active.pos.y++;
-                    if(this.collide()) {
-                        this.active.pos.y--; // Grounded
-                        // Don't lock yet (Handled by Lock Delay below)
-                    } else {
-                        this.lockTimer = 0; // Reset if falling
-                        this.lastMoveRotate = false;
-                    }
+                    if(this.collide()) { this.active.pos.y--; } else { this.lockTimer = 0; this.lastMoveRotate = false; }
                     this.dropCounter = 0;
                 }
-
-                // Lock Delay (500ms)
-                if(this.isGrounded()) {
-                    this.lockTimer += dt;
-                    if(this.lockTimer > 500) this.lock();
-                }
-
+                if(this.isGrounded()) { this.lockTimer += dt; if(this.lockTimer > 500) this.lock(); }
                 this.sendBoard();
             }
 
@@ -473,14 +602,12 @@
             const dt=t-lastT; lastT=t;
             if(gameActive) {
                 if(!isSpectator && !inputLocked){
-                    // Input Hold
                     if(keys.has(ctrl.soft)){ p1.active.pos.y++; if(p1.collide())p1.active.pos.y--; else { p1.lastMoveRotate=false; p1.lockTimer=0; } }
                     if(keys.has(ctrl.left)||keys.has(ctrl.right)){
                         const d=keys.has(ctrl.left)?-1:1;
                         p1.dasTimer+=dt;
                         if(p1.dasTimer>130){ p1.arrTimer+=dt; if(p1.arrTimer>0){ p1.move(d); p1.arrTimer=0; } }
                     }
-                    // Physics
                     p1.update(dt);
                     p1.updateStats();
                 }

@@ -7,83 +7,102 @@ const path = require('path');
 app.use(express.static(path.join(__dirname, 'public')));
 
 // --- GLOBAL STATE ---
-
-// DUEL SYSTEM
-let duelQueue = []; // Array of sockets waiting for 1v1
-
-// FFA SYSTEM
-let ffaPlayers = []; // { id, username, alive, socket }
-let ffaState = 'waiting'; // 'waiting', 'countdown', 'playing', 'finished'
+let ffaPlayers = []; 
+let ffaState = 'waiting'; 
 let ffaSeed = 12345;
+
+// --- DATA STORAGE ---
+// { "username": { password: "...", wins: 0, bestAPM: 0 } }
+const accounts = {}; 
 
 io.on('connection', (socket) => {
     
-    // --- DUEL MATCHMAKING ---
-    socket.on('join_duel_queue', (username) => {
-        socket.username = (username || "Player").substring(0,12);
-        duelQueue.push(socket);
-        
-        // Check for match
-        if (duelQueue.length >= 2) {
-            const p1 = duelQueue.shift();
-            const p2 = duelQueue.shift();
-            
-            const roomID = 'duel_' + p1.id + '_' + p2.id;
-            const seed = Math.floor(Math.random() * 1000000);
-            
-            p1.join(roomID);
-            p2.join(roomID);
-            
-            // 3s Countdown then start
-            io.to(roomID).emit('start_countdown', { duration: 3 });
-            
-            setTimeout(() => {
-                io.to(roomID).emit('match_start', { 
-                    mode: 'duel',
-                    seed: seed,
-                    players: [
-                        { id: p1.id, username: p1.username },
-                        { id: p2.id, username: p2.username }
-                    ]
+    // --- GLOBAL CHAT ---
+    socket.on('send_chat', (msg) => {
+        const cleanMsg = msg.replace(/</g, "&lt;").replace(/>/g, "&gt;").substring(0, 50);
+        const name = socket.username || "Anon";
+        io.emit('receive_chat', { user: name, text: cleanMsg });
+    });
+
+    // --- LOGIN / REGISTER ---
+    socket.on('login_attempt', (data) => {
+        const user = data.username.trim().substring(0, 12);
+        const pass = data.password.trim();
+
+        if (!user || !pass) {
+            socket.emit('login_response', { success: false, msg: "Enter user & pass." });
+            return;
+        }
+
+        if (accounts[user]) {
+            // Existing Account
+            if (accounts[user].password === pass) {
+                socket.username = user;
+                socket.emit('login_response', { 
+                    success: true, 
+                    username: user, 
+                    wins: accounts[user].wins,
+                    bestAPM: accounts[user].bestAPM || 0 
                 });
-            }, 3000);
+                // Send current leaderboards
+                socket.emit('leaderboard_update', getLeaderboards());
+            } else {
+                socket.emit('login_response', { success: false, msg: "Incorrect Password!" });
+            }
+        } else {
+            // New Account
+            accounts[user] = { password: pass, wins: 0, bestAPM: 0 };
+            socket.username = user;
+            socket.emit('login_response', { success: true, username: user, wins: 0, bestAPM: 0 });
+            io.emit('leaderboard_update', getLeaderboards());
+        }
+    });
+
+    // --- APM SUBMISSION ---
+    socket.on('submit_apm', (val) => {
+        if (!socket.username) return; // Only logged in users
+        
+        const score = parseInt(val) || 0;
+
+        // Update Personal Best in Account
+        if (accounts[socket.username]) {
+            const currentBest = accounts[socket.username].bestAPM || 0;
+            
+            if (score > currentBest) {
+                accounts[socket.username].bestAPM = score;
+                // Update client display
+                socket.emit('update_my_apm', score);
+                // Broadcast new leaderboard since a high score changed
+                io.emit('leaderboard_update', getLeaderboards());
+            }
         }
     });
 
     // --- FFA SYSTEM ---
-    socket.on('join_ffa', (username) => {
-        socket.username = (username || "Player").substring(0,12);
+    socket.on('join_ffa', () => {
+        if (!socket.username) return;
+
         socket.join('ffa_room');
-        
-        // Determine state
-        let isAlive = false;
-        
+        const existing = ffaPlayers.find(p => p.id === socket.id);
+        if (existing) return;
+
         if (ffaState === 'waiting' || ffaState === 'finished') {
-            isAlive = true;
             ffaPlayers.push({ id: socket.id, username: socket.username, alive: true, socket: socket });
             io.to('ffa_room').emit('lobby_update', { count: ffaPlayers.length });
             checkFFAStart();
         } else {
-            // Join as spectator
-            isAlive = false;
-            // Send current game data to spectator
             const livingPlayers = ffaPlayers.filter(p => p.alive).map(p => ({ id: p.id, username: p.username }));
             socket.emit('ffa_spectate', { seed: ffaSeed, players: livingPlayers });
             ffaPlayers.push({ id: socket.id, username: socket.username, alive: false, socket: socket });
         }
     });
 
-    // --- SHARED GAMEPLAY LOGIC ---
     socket.on('send_garbage', (data) => {
-        // data: { mode, amount }
-        if (data.mode === 'duel') {
-            socket.broadcast.to(Array.from(socket.rooms)[1]).emit('receive_garbage', data.amount);
-        } else if (data.mode === 'ffa' && ffaState === 'playing') {
-            // Split Trash Logic
+        if (ffaState === 'playing') {
             const targets = ffaPlayers.filter(p => p.alive && p.id !== socket.id);
             if (targets.length > 0) {
                 let split = Math.floor(data.amount / targets.length);
-                if (data.amount >= 4 && split === 0) split = 1; // Pity trash
+                if (data.amount >= 4 && split === 0) split = 1; 
                 if (split > 0) {
                     targets.forEach(t => io.to(t.id).emit('receive_garbage', split));
                 }
@@ -92,32 +111,19 @@ io.on('connection', (socket) => {
     });
 
     socket.on('update_board', (grid) => {
-        // Relay board to room (Duel opponent or FFA spectators/enemies)
-        const room = Array.from(socket.rooms).find(r => r !== socket.id);
-        if(room) socket.to(room).emit('enemy_board_update', { id: socket.id, grid: grid });
+        socket.to('ffa_room').emit('enemy_board_update', { id: socket.id, grid: grid });
     });
 
     socket.on('player_died', () => {
-        // Find player in FFA
         const p = ffaPlayers.find(x => x.id === socket.id);
         if (p && ffaState === 'playing' && p.alive) {
             p.alive = false;
             io.to('ffa_room').emit('elimination', { username: p.username });
             checkFFAWin();
         }
-        
-        // Handle Duel Death
-        const rooms = Array.from(socket.rooms).filter(r => r.startsWith('duel_'));
-        rooms.forEach(r => {
-            socket.to(r).emit('duel_win', { winner: "Opponent" }); // Opponent wins if I die
-        });
     });
 
     socket.on('disconnect', () => {
-        // Remove from Duel Queue
-        duelQueue = duelQueue.filter(s => s.id !== socket.id);
-        
-        // Remove from FFA
         const pIndex = ffaPlayers.findIndex(x => x.id === socket.id);
         if (pIndex !== -1) {
             const p = ffaPlayers[pIndex];
@@ -131,7 +137,29 @@ io.on('connection', (socket) => {
     });
 });
 
-// --- FFA LOOP HELPERS ---
+// --- HELPERS ---
+function getLeaderboards() {
+    // Generate lists dynamically from the accounts object
+    // This ensures 1 entry per user (their current stats)
+    
+    const allUsers = Object.entries(accounts);
+
+    // 1. Win Leaderboard
+    const wins = allUsers
+        .map(([name, data]) => ({ name: name, val: data.wins }))
+        .sort((a, b) => b.val - a.val)
+        .slice(0, 5);
+
+    // 2. APM Leaderboard
+    const apm = allUsers
+        .map(([name, data]) => ({ name: name, score: data.bestAPM || 0 }))
+        .filter(u => u.score > 0) // Only show people who have played APM test
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 5);
+        
+    return { wins: wins, apm: apm };
+}
+
 function checkFFAStart() {
     if (ffaState === 'waiting' && ffaPlayers.length >= 2) {
         startFFARound();
@@ -141,14 +169,10 @@ function checkFFAStart() {
 function startFFARound() {
     ffaState = 'countdown';
     ffaSeed = Math.floor(Math.random() * 1000000);
-    
-    // Revive everyone
     ffaPlayers.forEach(p => p.alive = true);
     
-    // 1. Countdown
     io.to('ffa_room').emit('start_countdown', { duration: 3 });
     
-    // 2. Start
     setTimeout(() => {
         ffaState = 'playing';
         io.to('ffa_room').emit('match_start', { 
@@ -163,21 +187,30 @@ function checkFFAWin() {
     const survivors = ffaPlayers.filter(p => p.alive);
     if (survivors.length <= 1) {
         ffaState = 'finished';
-        let winner = survivors.length === 1 ? survivors[0].username : "No One";
+        let winnerName = "No One";
         
-        // 1. Show Winner (3s duration)
-        io.to('ffa_room').emit('round_over', { winner: winner });
+        if (survivors.length === 1) {
+            winnerName = survivors[0].username;
+            if (accounts[winnerName]) {
+                accounts[winnerName].wins++;
+                const winnerSocket = survivors[0].socket;
+                if(winnerSocket) winnerSocket.emit('update_my_wins', accounts[winnerName].wins);
+            }
+            io.emit('leaderboard_update', getLeaderboards());
+        }
         
-        // 2. Wait 3s, then check restart
+        io.to('ffa_room').emit('round_over', { winner: winnerName });
+        
         setTimeout(() => {
             if (ffaPlayers.length >= 2) {
-                startFFARound(); // Loop back to countdown
+                startFFARound();
             } else {
                 ffaState = 'waiting';
-                io.to('ffa_room').emit('lobby_reset'); // Go back to "Waiting for players"
+                io.to('ffa_room').emit('lobby_reset');
             }
         }, 3000);
     }
 }
 
 http.listen(3000, () => { console.log('Server on 3000'); });
+

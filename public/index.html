@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Project A</title>
+    <title>Student Learning Portal</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
         /* --- CSS VARIABLES --- */
@@ -169,7 +169,7 @@
         .stat-val { font-size: 18px; font-weight: bold; color: #fff; font-family: monospace; }
 
         .game-columns { display: flex; align-items: flex-start; gap: 15px; }
-        .col-left { display: flex; flex-direction: column; gap: 15px; width: 120px; }
+        .col-left { display: flex; flex-direction: column; gap: 15px; width: 150px; }
         
         .box-container { background: #000; border: 1px solid var(--accent); box-shadow: 0 0 8px var(--glow); display: flex; flex-direction: column; align-items: center; position: relative; width: 100%; box-sizing: border-box; padding-bottom: 5px; transition: border-color 0.3s, box-shadow 0.3s; }
         .box-header { width: 100%; text-align: center; font-size: 12px; color: var(--accent); padding-top: 5px; padding-bottom: 5px; font-weight: bold; transition: color 0.3s; }
@@ -180,7 +180,7 @@
         .col-center { position: relative; }
         .main-board-wrap { border: 2px solid var(--accent); background: #000; box-shadow: 0 0 20px var(--glow-strong); position: relative; transition: border-color 0.3s, box-shadow 0.3s; }
         
-        .col-right { display: flex; flex-direction: column; width: 120px; }
+        .col-right { display: flex; flex-direction: column; width: 150px; }
         .box-next { height: 400px; justify-content: flex-start; }
         .side-canvas { width: 100%; display: block; }
 
@@ -213,7 +213,9 @@
 
         .overlay { position: absolute; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 150; display: flex; justify-content: center; align-items: center; flex-direction: column; pointer-events: none; }
         .hidden { display: none !important; }
-        #cnt-txt { font-size: 120px; font-weight: 900; color: #fff; animation: pop 0.5s infinite alternate; }
+        
+        /* REMOVED ANIMATION FROM COUNTDOWN TEXT */
+        #cnt-txt { font-size: 120px; font-weight: 900; color: #fff; }
         
         #results-table { border-collapse: collapse; margin-top: 20px; font-family: monospace; font-size: 20px; width: 600px; }
         #results-table th { color: var(--accent); padding: 10px; border-bottom: 2px solid #fff; }
@@ -314,7 +316,7 @@
                 <div class="col-left">
                     <div class="box-container">
                         <div class="box-header">HOLD</div>
-                        <canvas id="p1-h" class="side-canvas" width="120" height="160"></canvas>
+                        <canvas id="p1-h" class="side-canvas" width="150" height="160"></canvas>
                     </div>
                     <div style="flex:1"></div>
                     <div class="box-container box-stat-side">
@@ -339,7 +341,7 @@
                 <div class="col-right">
                     <div class="box-container">
                         <div class="box-header">NEXT</div>
-                        <canvas id="p1-n" class="side-canvas" width="120" height="400"></canvas>
+                        <canvas id="p1-n" class="side-canvas" width="150" height="400"></canvas>
                     </div>
                 </div>
             </div>
@@ -466,7 +468,8 @@
                 const finalAPM = p1.elAPM.innerText;
                 const winOver = document.getElementById('overlay-cnt'); 
                 winOver.classList.remove('hidden');
-                document.getElementById('cnt-txt').innerText = "FINISH";
+                // Removed Animation
+                document.getElementById('cnt-txt').innerText = finalAPM + " APM"; 
                 if(socket) socket.emit('submit_apm', finalAPM);
                 setTimeout(goHome, 3000);
             }, 60000);
@@ -563,18 +566,18 @@
             });
 
             socket.on('receive_garbage', n => { 
-                if (gameMode === 'zen' || gameMode === 'apm_test') return;
+                if(gameMode === 'zen' || gameMode === 'apm_test') return;
                 if (!isSpectator) p1.receiveGarbage(n); 
             });
             socket.on('enemy_board_update', d => { 
-                if (gameMode === 'zen' || gameMode === 'apm_test') return;
+                if(gameMode === 'zen' || gameMode === 'apm_test') return;
                 drawEnemy(d.id, d.grid); 
             });
             socket.on('elimination', d => { feed(`${d.username} eliminated by ${d.killer}!`); });
             socket.on('request_win_stats', () => { socket.emit('match_won', p1.getStats()); });
             
             socket.on('match_summary', results => {
-                if (gameMode === 'zen' || gameMode === 'apm_test') return;
+                if(gameMode === 'zen' || gameMode === 'apm_test') return;
                 gameActive = false;
                 const ov = document.getElementById('overlay-results');
                 const tb = document.getElementById('results-body');
@@ -599,7 +602,7 @@
             });
             
             socket.on('lobby_reset', () => { 
-                if (gameMode === 'zen' || gameMode === 'apm_test') return;
+                if(gameMode === 'zen' || gameMode === 'apm_test') return;
                 document.getElementById('overlay-results').classList.add('hidden'); 
                 if(gameMode === 'ffa') goHome(); 
             });
@@ -611,7 +614,7 @@
             socket.on('update_my_wins', w => document.getElementById('display-wins').innerText = w);
             socket.on('update_my_apm', a => document.getElementById('display-apm').innerText = a);
             socket.on('ffa_spectate', d => {
-                if (gameMode === 'zen' || gameMode === 'apm_test') return;
+                if(gameMode === 'zen' || gameMode === 'apm_test') return;
                 document.getElementById('wait-msg').innerText = "SPECTATING...";
                 setTimeout(() => { isSpectator=true; gameMode='ffa'; setupGameUI(); setupOnlineGame(d.seed, d.players); }, 1000);
             });
@@ -936,8 +939,6 @@
                 // Dynamic Gravity
                 if (gameMode === 'ffa') {
                     const elapsed = (Date.now() - this.startTime) / 1000;
-                    // Increase speed every 30s
-                    // Example: 0-30s = 700, 30-60s = 630...
                     const reduction = Math.floor(elapsed / 30) * 70;
                     dropSpeed = Math.max(100, 700 - reduction); 
                 }
@@ -955,21 +956,17 @@
             draw(){
                 this.ctx.fillStyle='#000'; this.ctx.fillRect(0,0,120,900);
                 
-                // Red Zone (Rows 0-3)
                 this.ctx.fillStyle = 'rgba(255, 0, 0, 0.2)';
                 this.ctx.fillRect(0, 0, 120, 120); 
                 
-                // Draw Grid Lines (Only Safe Zone, Rows 4+)
                 this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
                 this.ctx.lineWidth = 1;
                 this.ctx.beginPath();
                 
-                // Vertical Lines
                 for (let x = 1; x < COLS; x++) {
                     this.ctx.moveTo(x * B_SIZE, 4 * B_SIZE); 
                     this.ctx.lineTo(x * B_SIZE, ROWS * B_SIZE);
                 }
-                // Horizontal Lines
                 for (let y = 4; y < ROWS; y++) { 
                     this.ctx.moveTo(0, y * B_SIZE);
                     this.ctx.lineTo(COLS * B_SIZE, y * B_SIZE);
@@ -1002,7 +999,7 @@
                 if(!keys.has(e.code)){
                     keys.add(e.code);
                     if(e.code==ctrl.rotate)p1.rotate();
-                    if(e.code==ctrl.hold)p1.hold(1); // Standard hold
+                    if(e.code==ctrl.hold)p1.hold(1);
                     if(e.code==ctrl.hard)p1.hardDrop();
                     if(e.code==ctrl.left || e.code==ctrl.right){ p1.dasTimer=0; p1.arrTimer=0; p1.move(e.code==ctrl.left?-1:1); }
                 }

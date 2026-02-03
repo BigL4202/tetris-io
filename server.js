@@ -6,7 +6,6 @@ const io = require('socket.io')(http);
 const path = require('path');
 const fs = require('fs');
 
-// Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
 
 // --- GLOBAL STATE ---

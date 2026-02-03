@@ -6,7 +6,8 @@ const io = require('socket.io')(http);
 const path = require('path');
 const fs = require('fs');
 
-app.use(express.static(path.join(__dirname, 'public')));
+// MODIFIED: Serve files from the CURRENT directory (fixes the "public" folder issue)
+app.use(express.static(__dirname));
 
 // --- DATA STORAGE ---
 const DATA_FILE = path.join(__dirname, 'accounts.json');

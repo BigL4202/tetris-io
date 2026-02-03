@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Project Asmondy</title>
+    <title>Project A</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
         /* --- CSS VARIABLES --- */
@@ -158,9 +158,10 @@
         .history-table tr:hover td { background: #151515; color: #fff; }
 
         /* --- GAME UI LAYOUT --- */
-        /* FIXED LAYOUT: Row direction ensures opponents are on the right */
         .game-area { display: flex; flex-direction: row; justify-content: center; align-items: flex-start; gap: 40px; transform: scale(0.9); transition: 0.5s; }
         @media (max-height: 950px) { .game-area { transform: scale(0.75); } }
+        /* iPad Scaling */
+        @media only screen and (max-width: 1200px) { .game-area { transform: scale(0.65); transform-origin: top center; margin-top: 0; } }
 
         .stats-header { display: flex; gap: 15px; margin-bottom: 10px; }
         .stat-box-top { background: #000; border: 1px solid var(--accent); box-shadow: 0 0 5px var(--glow); width: 100px; padding: 8px 0; text-align: center; transition: border-color 0.3s, box-shadow 0.3s; }
@@ -233,7 +234,7 @@
 
     <div id="menu-container">
         <div id="scr-login" class="screen active" style="width:auto;">
-            <h1>PROJECT <span>ASMONDY</span></h1>
+            <h1>PROJECT <span>A</span></h1>
             <p style="color:#888; margin-bottom:10px;">STUDENT LOGIN</p>
             <input type="text" id="username" class="input-std" placeholder="USERNAME" maxlength="12" oninput="saveCreds()">
             <input type="password" id="password" class="input-std" placeholder="PASSWORD" oninput="saveCreds()">
@@ -241,7 +242,7 @@
         </div>
 
         <div id="scr-main" class="screen">
-            <h1>PROJECT <span>ASMONDY</span></h1>
+            <h1>PROJECT <span>A</span></h1>
             <div id="main-split">
                 <div class="menu-left tech-panel">
                     <div class="user-info">
@@ -287,10 +288,10 @@
     <div id="overlay-results" class="overlay hidden">
         <h1 style="color: var(--accent);">RESULTS</h1>
         <table id="results-table">
-            <thead><tr><th>#</th><th>PLAYER</th><th>APM</th><th>PPS</th><th>SENT</th><th>RECV</th></tr></thead>
+            <thead><tr><th>#</th><th>PLAYER</th><th>SURVIVED</th><th>APM</th><th>PPS</th><th>SENT</th><th>RECV</th></tr></thead>
             <tbody id="results-body"></tbody>
         </table>
-        <div class="sub-txt" style="margin-top:20px; font-size:16px; color:#888;">Next round in <span id="res-timer">10</span>s...</div>
+        <div class="sub-txt" style="margin-top:20px; font-size:16px; color:#888;">Next round in <span id="res-timer">5</span>s...</div>
     </div>
     
     <div id="kill-feed"></div>
@@ -539,6 +540,7 @@
             });
 
             socket.on('start_countdown', data => {
+                if(gameMode === 'zen' || gameMode === 'apm_test') return;
                 gameMode = 'ffa';
                 setTheme('#ff9900'); 
                 setupGameUI();
@@ -553,34 +555,54 @@
             });
 
             socket.on('match_start', data => {
+                if(gameMode === 'zen' || gameMode === 'apm_test') return;
                 inputLocked = false;
                 gameMode = data.mode;
                 isSpectator = false;
                 setupOnlineGame(data.seed, data.players);
             });
 
-            socket.on('receive_garbage', n => { if (gameMode === 'ffa' && !isSpectator) p1.receiveGarbage(n); });
-            socket.on('enemy_board_update', d => { if (gameMode === 'ffa') drawEnemy(d.id, d.grid); });
-            socket.on('elimination', d => { feed(`${d.username} eliminated!`); });
+            socket.on('receive_garbage', n => { 
+                if (gameMode === 'zen' || gameMode === 'apm_test') return;
+                if (!isSpectator) p1.receiveGarbage(n); 
+            });
+            socket.on('enemy_board_update', d => { 
+                if (gameMode === 'zen' || gameMode === 'apm_test') return;
+                drawEnemy(d.id, d.grid); 
+            });
+            socket.on('elimination', d => { feed(`${d.username} eliminated by ${d.killer}!`); });
             socket.on('request_win_stats', () => { socket.emit('match_won', p1.getStats()); });
             
             socket.on('match_summary', results => {
+                if (gameMode === 'zen' || gameMode === 'apm_test') return;
                 gameActive = false;
                 const ov = document.getElementById('overlay-results');
                 const tb = document.getElementById('results-body');
                 tb.innerHTML = '';
                 results.forEach(res => {
-                    const row = `<tr><td class="${res.place===1?'rank-1':''}">${res.place}</td><td>${res.username}</td><td>${res.apm}</td><td>${res.pps}</td><td>${res.sent}</td><td>${res.recv}</td></tr>`;
+                    const row = `<tr>
+                        <td class="${res.place===1?'rank-1':''}">${res.place}</td>
+                        <td>${res.username}</td>
+                        <td>${res.durationStr}</td>
+                        <td>${res.apm}</td>
+                        <td>${res.pps}</td>
+                        <td>${res.sent}</td>
+                        <td>${res.recv}</td>
+                    </tr>`;
                     tb.innerHTML += row;
                 });
                 ov.classList.remove('hidden');
-                let t = 10;
+                let t = 5; // Reduced to 5s
                 const sp = document.getElementById('res-timer');
                 sp.innerText = t;
                 const iv = setInterval(() => { t--; sp.innerText = t; if(t<=0) clearInterval(iv); }, 1000);
             });
             
-            socket.on('lobby_reset', () => { document.getElementById('overlay-results').classList.add('hidden'); if(gameMode === 'ffa') goHome(); });
+            socket.on('lobby_reset', () => { 
+                if (gameMode === 'zen' || gameMode === 'apm_test') return;
+                document.getElementById('overlay-results').classList.add('hidden'); 
+                if(gameMode === 'ffa') goHome(); 
+            });
             socket.on('receive_chat', data => {
                 const box = document.getElementById('chat-history');
                 box.innerHTML += `<div class="chat-line"><span class="chat-user">${data.user}:</span> ${data.text}</div>`;
@@ -589,6 +611,7 @@
             socket.on('update_my_wins', w => document.getElementById('display-wins').innerText = w);
             socket.on('update_my_apm', a => document.getElementById('display-apm').innerText = a);
             socket.on('ffa_spectate', d => {
+                if (gameMode === 'zen' || gameMode === 'apm_test') return;
                 document.getElementById('wait-msg').innerText = "SPECTATING...";
                 setTimeout(() => { isSpectator=true; gameMode='ffa'; setupGameUI(); setupOnlineGame(d.seed, d.players); }, 1000);
             });
@@ -865,7 +888,12 @@
                 return lines;
             }
 
-            receiveGarbage(n){ this.pendingG+=n; this.linesRecvTotal+=n; this.gBar.style.height=(this.pendingG*30)+'px'; this.updateStats(); }
+            receiveGarbage(n){ 
+                this.pendingG = Math.min(this.pendingG + n, 10);
+                this.linesRecvTotal += n;
+                this.gBar.style.height = (this.pendingG * 30) + 'px';
+                this.updateStats(); 
+            }
             
             updateStats(){
                 const sec = (Date.now() - this.startTime) / 1000;
@@ -904,8 +932,18 @@
             showText(el, msg){ el.innerText=msg; el.style.opacity=1; setTimeout(()=>el.style.opacity=0, 1000); }
             
             update(dt){
+                let dropSpeed = 700;
+                // Dynamic Gravity
+                if (gameMode === 'ffa') {
+                    const elapsed = (Date.now() - this.startTime) / 1000;
+                    // Increase speed every 30s
+                    // Example: 0-30s = 700, 30-60s = 630...
+                    const reduction = Math.floor(elapsed / 30) * 70;
+                    dropSpeed = Math.max(100, 700 - reduction); 
+                }
+
                 this.dropCounter+=dt;
-                if(this.dropCounter > 700) {
+                if(this.dropCounter > dropSpeed) {
                     this.active.pos.y++;
                     if(this.collide()) { this.active.pos.y--; } else { this.lockTimer = 0; this.lastMoveRotate = false; }
                     this.dropCounter = 0;

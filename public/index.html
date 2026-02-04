@@ -39,7 +39,9 @@
 
         /* --- MENUS --- */
         #menu-container { position: absolute; z-index: 100; background: rgba(0,0,0,0.95); width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-        .screen { display: none; flex-direction: column; align-items: center; width: 100%; max-width: 950px; transition: transform 0.3s ease; }
+        
+        /* Adjusted width to fit 3 columns */
+        .screen { display: none; flex-direction: column; align-items: center; width: 100%; max-width: 1200px; transition: transform 0.3s ease; }
         .active { display: flex; }
         
         h1 { font-size: 60px; margin-bottom: 30px; letter-spacing: 4px; text-align: center; font-weight: 900; text-transform: uppercase; }
@@ -84,11 +86,13 @@
         .btn-ffa { background: #ff9900; color: #000; }
         .btn-blue { background: #00a8ff; color: #fff; } 
 
-        #main-split { display: flex; flex-direction: row; gap: 40px; align-items: stretch; margin-top: 10px; }
-        .menu-left { width: 340px; }
+        #main-split { display: flex; flex-direction: row; gap: 30px; align-items: flex-start; margin-top: 10px; }
+        
+        /* New 3-Column Layout Classes */
+        .menu-col { width: 340px; display: flex; flex-direction: column; align-items: center; }
+        
         .user-info { margin-bottom: 20px; font-size: 16px; color: #ccc; text-align: center; width: 100%; line-height: 1.6; border-bottom: 1px solid #333; padding-bottom: 15px; }
         .user-info span { color: #fff; font-weight: bold; font-size: 18px; }
-        .menu-right { width: 340px; justify-content: flex-start; }
         
         .lb-header-text { 
             color: var(--accent); font-size: 14px; font-weight: bold; text-align: center; 
@@ -102,14 +106,32 @@
         .lb-item:hover { background: rgba(255,255,255,0.05); }
         .rank-num { color: #ffcc00; font-weight: bold; margin-right: 5px; } 
         
+        /* NEW: Scrollable Text Box Logic */
+        .scroll-text {
+            max-height: 350px;
+            overflow-y: auto;
+            text-align: left;
+            font-size: 14px;
+            color: #ccc;
+            line-height: 1.6;
+            padding-right: 10px;
+            width: 100%;
+        }
+        .scroll-text p { margin-bottom: 15px; }
+        .scroll-text::-webkit-scrollbar { width: 5px; }
+        .scroll-text::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
+        .scroll-text::-webkit-scrollbar-track { background: #222; }
+
         /* --- IPAD MENU FIX (SCALING) --- */
-        @media only screen and (max-width: 1200px) { 
+        @media only screen and (max-width: 1400px) { 
             .screen { 
-                transform: scale(0.8); /* Scale menu down to fit side-by-side */
+                transform: scale(0.8); /* Scale menu down to fit 3 columns */
                 transform-origin: center center;
                 width: 100%;
             }
-            /* DO NOT change flex-direction to column */
+        }
+        @media only screen and (max-width: 1000px) { 
+            .screen { transform: scale(0.65); } 
         }
 
         /* STATS PAGE */
@@ -179,7 +201,6 @@
         .b2b-text { top: 160px; font-size: 18px; color: var(--accent); letter-spacing: 2px; }
         .sent-text { top: 300px; font-size: 50px; color: #ff0055; font-weight: 900; }
 
-        /* --- RESULTS OVERLAY (THE COOL VERSION) --- */
         .overlay { position: absolute; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 150; display: flex; justify-content: center; align-items: center; flex-direction: column; pointer-events: none; }
         .hidden { display: none !important; }
         #cnt-txt { font-size: 120px; font-weight: 900; color: #fff; }
@@ -198,7 +219,6 @@
         }
         #results-table td:first-child { border-left: 1px solid #333; border-radius: 5px 0 0 5px; }
         #results-table td:last-child { border-right: 1px solid #333; border-radius: 0 5px 5px 0; }
-        
         .rank-1 { color: #ffcc00 !important; font-weight: bold; text-shadow: 0 0 10px #ffcc00; }
 
         #kill-feed { position: absolute; bottom: 20px; left: 20px; width: 300px; display: flex; flex-direction: column; gap: 5px; pointer-events: none; z-index: 100; }
@@ -224,7 +244,20 @@
         <div id="scr-main" class="screen">
             <h1>PROJECT <span>A</span></h1>
             <div id="main-split">
-                <div class="menu-left tech-panel">
+                
+                <div class="menu-col tech-panel">
+                    <div class="lb-header-text">ABOUT PROJECT A</div>
+                    <div class="scroll-text">
+                        <p>Project A is working to releasing its 1.0 update. As of right now all account data will be wiped every update.</p>
+                        <p>Project A's development has taken roughly 20 or so hours to get this far and I am paying $7 monthly for the server. If you would like to support development or want to see the servers upgraded money is greatly appreciated.</p>
+                        <p>I will be making another website to submit bugs or suggestions.</p>
+                        
+                        <div class="lb-header-text" style="margin-top: 25px; margin-bottom: 10px;">CUSTOM SERVERS</div>
+                        <p>If anyone would like their own private server with its own custom url then I will set that up for a one time payment of $5. If your not satisfied with the performance I can refund you if the server isnt meeting your needs.</p>
+                    </div>
+                </div>
+
+                <div class="menu-col tech-panel">
                     <div class="user-info">
                         Welcome, <span id="display-user">Guest</span><br>
                         Your Wins: <span id="display-wins">0</span><br>
@@ -237,7 +270,7 @@
                     <button class="btn" style="background:#222; color:#888; margin-top:20px;" onclick="logOut()">LOGOUT</button>
                 </div>
                 
-                <div class="menu-right tech-panel">
+                <div class="menu-col tech-panel">
                     <div class="lb-header-text">ONLINE WIN LEADERBOARD</div>
                     <div id="lb-wins" class="lb-list"><div style="text-align:center; color:#666;">Loading...</div></div>
                     
@@ -1027,3 +1060,4 @@
     </script>
 </body>
 </html>
+

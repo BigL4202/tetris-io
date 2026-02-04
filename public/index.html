@@ -330,12 +330,10 @@
         <div id="ffa-grid"></div> 
     </div>
 <script>
-        // --- CONFIGURATION ---
         const COLS=4, ROWS=30, B_SIZE=30; 
         const PIECES=[[[1,1,1,1]],[[1,1],[1,1]],[[0,1,0],[1,1,1]],[[1,1,0],[0,1,1]],[[0,1,1],[1,1,0]],[[1,0,0],[1,1,1]],[[0,0,1],[1,1,1]]];
         const COLORS=['#31C7EF','#F7D308','#FF69B4','#EF2029','#42B642','#9D00FF','#EF7921'];
         
-        // SRS Kicks
         const OFFSETS_JLSTZ = [
             [[0,0], [0,0], [0,0], [0,0], [0,0]], [[0,0], [1,0], [1,-1], [0,2], [1,2]],
             [[0,0], [0,0], [0,0], [0,0], [0,0]], [[0,0], [-1,0], [-1,-1], [0,2], [-1,2]],
@@ -350,12 +348,10 @@
         ];
         const KICK_INDEX = { "0_1":0, "1_0":1, "1_2":2, "2_1":3, "2_3":4, "3_2":5, "3_0":6, "0_3":7 };
 
-        // --- GLOBAL STATE ---
         let socket=null, gameActive=false, inputLocked=false, isSpectator=false;
         let gameMode='zen', startTime=0, apmTimer=null;
         let statsCache = {}; 
         
-        // --- UTILS ---
         function setTheme(hex) {
             const root = document.documentElement;
             root.style.setProperty('--accent', hex);
@@ -412,9 +408,14 @@
         }
 
         function goHome() {
+            // CRITICAL FIX: Fully disconnect from online state
             gameActive = false;
+            gameMode = 'menu';
+            isSpectator = false;
             clearTimeout(apmTimer);
+            
             if (socket) socket.emit('leave_lobby');
+            
             document.getElementById('game-ui').classList.add('hidden');
             document.getElementById('home-btn').classList.add('hidden');
             document.getElementById('kill-feed').innerHTML = '';
@@ -430,10 +431,10 @@
             navTo('scr-stats');
         }
 
-        // --- GAME MODES ---
         function startZen() {
             if(socket) socket.emit('leave_lobby'); 
             gameMode='zen';
+            isSpectator = false;
             setTheme('#a29bfe'); 
             setupGameUI();
             p1.initRNG(Math.random()*999); p1.reset(); 
@@ -443,6 +444,7 @@
         function startAPMTest() {
             if(socket) socket.emit('leave_lobby'); 
             gameMode='apm_test';
+            isSpectator = false;
             setTheme('#ff5555'); 
             clearTimeout(apmTimer); 
             setupGameUI();
@@ -463,10 +465,8 @@
             navTo('scr-wait');
             document.getElementById('wait-msg').innerText = "JOINING FFA LOBBY...";
             setTheme('#ff9900'); 
-            
-            // FIX: Set mode to 'lobby' so the game accepts the start signal
             gameMode = 'lobby'; 
-            
+            isSpectator = false;
             if(!socket) connect();
             socket.emit('join_ffa');
         }
@@ -477,7 +477,6 @@
             document.getElementById('home-btn').classList.remove('hidden');
         }
 
-        // --- SOCKET.IO HANDLING ---
         function connect() {
             if(socket) return;
             socket = io();
@@ -533,9 +532,7 @@
             });
 
             socket.on('start_countdown', data => {
-                // Ignore if in Zen/APM, but ALLOW if in 'lobby' or 'ffa'
                 if(gameMode === 'zen' || gameMode === 'apm_test') return;
-                
                 gameMode = 'ffa';
                 setTheme('#ff9900'); 
                 setupGameUI();
@@ -548,33 +545,27 @@
                 let n = data.duration;
                 tx.innerText = n;
                 inputLocked = true;
-                
-                const iv = setInterval(()=>{ 
-                    n--; 
-                    if(n > 0) tx.innerText = n; 
-                    else { 
-                        clearInterval(iv); 
-                        ov.classList.add('hidden'); 
-                    } 
-                }, 1000);
+                const iv = setInterval(()=>{ n--; if(n>0) tx.innerText = n; else { clearInterval(iv); ov.classList.add('hidden'); } }, 1000);
             });
 
             socket.on('match_start', data => {
                 if(gameMode === 'zen' || gameMode === 'apm_test') return;
                 inputLocked = false;
                 gameMode = data.mode;
+                
+                // CRITICAL FIX: Always start as player unless explicit logic elsewhere overrides
                 isSpectator = false;
+                document.getElementById('p1-root').style.opacity = '1';
+                
                 setupOnlineGame(data.seed, data.players);
             });
 
             socket.on('receive_garbage', n => { 
                 if(gameMode === 'ffa' && !isSpectator) p1.receiveGarbage(n); 
             });
-            
             socket.on('enemy_board_update', d => { 
                 if(gameMode === 'ffa') drawEnemy(d.id, d.grid); 
             });
-            
             socket.on('elimination', d => { feed(`${d.username} eliminated by ${d.killer}!`); });
             socket.on('request_win_stats', () => { socket.emit('match_won', p1.getStats()); });
             
@@ -606,7 +597,6 @@
             socket.on('lobby_reset', () => { 
                 if(gameMode === 'zen' || gameMode === 'apm_test') return;
                 document.getElementById('overlay-results').classList.add('hidden'); 
-                if(gameMode === 'ffa' || gameMode === 'lobby') goHome(); 
             });
             
             socket.on('receive_chat', data => {
@@ -620,7 +610,19 @@
             socket.on('ffa_spectate', d => {
                 if(gameMode === 'zen' || gameMode === 'apm_test') return;
                 document.getElementById('wait-msg').innerText = "SPECTATING...";
-                setTimeout(() => { isSpectator=true; gameMode='ffa'; setupGameUI(); setupOnlineGame(d.seed, d.players); }, 1000);
+                setTimeout(() => { 
+                    isSpectator=true; 
+                    gameMode='ffa'; 
+                    setupGameUI(); 
+                    document.getElementById('p1-root').style.opacity = '0.3';
+                    setupOnlineGame(d.seed, d.players); 
+                }, 1000);
+            });
+
+            // NEW: Handle AFK Kick
+            socket.on('force_disconnect', msg => {
+                alert(msg);
+                goHome();
             });
         }
 
@@ -672,7 +674,6 @@
                     grid.appendChild(d);
                 }
             });
-            document.getElementById('p1-root').style.opacity = isSpectator ? '0.3' : '1';
             loop();
         }
 
@@ -802,7 +803,6 @@
                     }
                 }
 
-                // Safety kicks
                 const safetyKicks = [[-1,0],[1,0],[-2,0],[2,0],[-3,0]];
                 for(let k of safetyKicks) {
                     this.active.pos.x = initialPos.x + k[0];

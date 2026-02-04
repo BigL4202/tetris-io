@@ -12,7 +12,7 @@
             --glow-strong: rgba(0, 255, 204, 0.4);
         }
 
-        /* --- GLOBAL LAYOUT --- */
+        /* --- GLOBAL --- */
         body { 
             background-color: #050505;
             background-image: 
@@ -23,14 +23,11 @@
             background-attachment: fixed;
             color: #fff; 
             font-family: 'Segoe UI', sans-serif; 
-            
-            /* CENTERING FIX FOR IPAD */
             display: flex; 
             flex-direction: column; 
             align-items: center; 
             justify-content: center; 
             height: 100vh; 
-            width: 100vw;
             margin: 0; 
             overflow: hidden; 
         }
@@ -42,13 +39,14 @@
 
         /* --- MENUS --- */
         #menu-container { position: absolute; z-index: 100; background: rgba(0,0,0,0.95); width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-        .screen { display: none; flex-direction: column; align-items: center; width: 100%; max-width: 950px; }
+        .screen { display: none; flex-direction: column; align-items: center; width: 100%; max-width: 950px; transition: transform 0.3s ease; }
         .active { display: flex; }
         
         h1 { font-size: 60px; margin-bottom: 30px; letter-spacing: 4px; text-align: center; font-weight: 900; text-transform: uppercase; }
         h1 span { 
             background: linear-gradient(135deg, var(--accent), #fff);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             text-shadow: 0 0 30px var(--glow);
             animation: titlePulse 3s infinite ease-in-out;
         }
@@ -58,9 +56,14 @@
         }
 
         .tech-panel {
-            background: rgba(10, 10, 10, 0.8); border: 1px solid var(--accent);
-            box-shadow: 0 0 20px var(--glow); border-radius: 8px;
-            padding: 30px; display: flex; flex-direction: column; align-items: center;
+            background: rgba(10, 10, 10, 0.8);
+            border: 1px solid var(--accent);
+            box-shadow: 0 0 20px var(--glow);
+            border-radius: 8px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             backdrop-filter: blur(10px);
         }
 
@@ -70,8 +73,8 @@
         .btn { 
             padding: 15px 40px; font-size: 16px; cursor: pointer; border: none; font-weight: 800; 
             border-radius: 4px; margin: 8px; width: 300px; text-transform: uppercase; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5); position: relative; overflow: hidden;
-            transition: transform 0.2s, filter 0.2s;
+            transition: all 0.2s ease-in-out; box-shadow: 0 4px 15px rgba(0,0,0,0.5); 
+            letter-spacing: 1px; position: relative; overflow: hidden;
         }
         .btn:hover { transform: translateY(-2px) scale(1.02); filter: brightness(1.2); letter-spacing: 3px; box-shadow: 0 0 20px var(--glow); }
         
@@ -85,94 +88,124 @@
         .menu-left { width: 340px; }
         .user-info { margin-bottom: 20px; font-size: 16px; color: #ccc; text-align: center; width: 100%; line-height: 1.6; border-bottom: 1px solid #333; padding-bottom: 15px; }
         .user-info span { color: #fff; font-weight: bold; font-size: 18px; }
-        
         .menu-right { width: 340px; justify-content: flex-start; }
-        .lb-header-text { color: var(--accent); font-size: 14px; font-weight: bold; text-align: center; margin-bottom: 10px; margin-top: 20px; border-bottom: 1px solid #333; padding-bottom: 5px; width: 100%; }
-        .lb-list { width: 100%; font-size: 13px; }
+        
+        .lb-header-text { 
+            color: var(--accent); font-size: 14px; font-weight: bold; text-align: center; 
+            margin-bottom: 10px; margin-top: 20px; text-transform: uppercase; letter-spacing: 1px; 
+            border-bottom: 1px solid #333; padding-bottom: 5px; width: 100%;
+        }
+        .lb-header-text:first-child { margin-top: 0; }
+
+        .lb-list { width: 100%; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #fff; }
         .lb-item { display: flex; justify-content: space-between; padding: 8px 5px; border-bottom: 1px solid #1a1a1a; transition: background 0.2s; }
         .lb-item:hover { background: rgba(255,255,255,0.05); }
         .rank-num { color: #ffcc00; font-weight: bold; margin-right: 5px; } 
         
-        /* STATS SCREEN */
-        #stats-layout { display: flex; width: 900px; height: 550px; gap: 20px; }
-        #stats-list { width: 250px; background: #050505; border: 1px solid var(--accent); border-radius: 4px; overflow-y: auto; padding: 10px; }
-        #stats-detail { flex: 1; background: #050505; border: 1px solid var(--accent); border-radius: 4px; padding: 20px; overflow: hidden; }
-        .player-item { padding: 12px; cursor: pointer; border-bottom: 1px solid #222; color: #888; transition: 0.2s; }
-        .player-item:hover, .player-item.selected { background: #111; color: var(--accent); padding-left: 15px; }
+        /* --- IPAD MENU FIX (SCALING) --- */
+        @media only screen and (max-width: 1200px) { 
+            .screen { 
+                transform: scale(0.8); /* Scale menu down to fit side-by-side */
+                transform-origin: center center;
+                width: 100%;
+            }
+            /* DO NOT change flex-direction to column */
+        }
 
+        /* STATS PAGE */
+        #stats-layout { display: flex; width: 900px; height: 550px; gap: 20px; }
+        #stats-list { width: 250px; background: #050505; border: 1px solid var(--accent); box-shadow: 0 0 15px var(--glow); border-radius: 4px; overflow-y: auto; padding: 10px; }
+        #stats-detail { flex: 1; background: #050505; border: 1px solid var(--accent); box-shadow: 0 0 15px var(--glow); border-radius: 4px; padding: 20px; display: flex; flex-direction: column; overflow: hidden; }
+        .player-item { padding: 12px; cursor: pointer; border-bottom: 1px solid #222; color: #888; font-weight: bold; transition: 0.2s; }
+        .player-item:hover { background: #111; color: #fff; padding-left: 15px; }
+        .player-item.selected { background: var(--glow); color: var(--accent); border-color: var(--accent); }
+        .stat-user-title { font-size: 32px; color: var(--accent); font-weight: 900; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px var(--glow); }
+        .stat-section-label { font-size: 12px; color: #666; margin-bottom: 8px; letter-spacing: 1px; font-weight: bold; border-bottom: 1px solid #333; padding-bottom: 4px; width: 100%; display:block; }
         .stat-row { display: flex; gap: 15px; margin-bottom: 20px; width: 100%; }
-        .stat-card { flex: 1; background: #111; border: 1px solid #333; border-radius: 4px; padding: 10px; text-align: center; }
+        .stat-card { flex: 1; background: #111; border: 1px solid #333; border-radius: 4px; padding: 10px; text-align: center; transition: 0.2s; }
+        .stat-card:hover { border-color: var(--accent); box-shadow: 0 0 5px var(--glow); transform: translateY(-2px); }
+        .stat-card-label { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
         .stat-card-val { font-size: 20px; color: #fff; font-weight: 900; font-family: monospace; }
+        .stat-card-val.highlight { color: #ffcc00; }
         .history-wrapper { flex: 1; overflow-y: auto; border: 1px solid #222; background: #0a0a0a; border-radius: 4px; }
         .history-table { width: 100%; border-collapse: collapse; font-size: 12px; font-family: monospace; }
-        .history-table th { background: #111; color: var(--accent); padding: 10px; position: sticky; top: 0; }
+        .history-table th { background: #111; color: var(--accent); padding: 10px; text-align: center; position: sticky; top: 0; border-bottom: 1px solid #333; z-index: 2; }
         .history-table td { padding: 8px; border-bottom: 1px solid #222; text-align: center; color: #ccc; }
+        .history-table tr:hover td { background: #151515; color: #fff; }
 
-        /* --- GAME AREA SCALING FOR IPAD --- */
-        .game-area { 
-            display: flex; flex-direction: row; justify-content: center; align-items: flex-start; 
-            gap: 40px; 
-            transform: scale(0.9); 
-            transition: 0.5s; 
-        }
-
-        /* Standard Laptop Scaling */
+        /* --- GAME UI LAYOUT --- */
+        .game-area { display: flex; flex-direction: row; justify-content: center; align-items: flex-start; gap: 40px; transform: scale(0.9); transition: 0.5s; }
         @media (max-height: 950px) { .game-area { transform: scale(0.75); } }
+        /* iPad Scaling - Centered */
+        @media only screen and (max-width: 1200px) { .game-area { transform: scale(0.65); transform-origin: center center; } }
 
-        /* IPAD / TABLET FIX - Stronger scaling and centering */
-        @media only screen and (max-width: 1200px) { 
-            .game-area { 
-                transform: scale(0.65); /* Reduced size to fit height */
-                transform-origin: center center; /* Shrink to center, not top */
-                gap: 20px;
-            } 
-            #main-split { flex-direction: column; align-items: center; gap: 20px; }
-        }
-
-        /* --- GAME UI --- */
         .stats-header { display: flex; gap: 15px; margin-bottom: 10px; }
-        .stat-box-top { background: #000; border: 1px solid var(--accent); width: 100px; padding: 8px 0; text-align: center; }
-        .stat-label { font-size: 11px; color: var(--accent); font-weight: bold; }
+        .stat-box-top { background: #000; border: 1px solid var(--accent); box-shadow: 0 0 5px var(--glow); width: 100px; padding: 8px 0; text-align: center; transition: border-color 0.3s, box-shadow 0.3s; }
+        .stat-label { font-size: 11px; color: var(--accent); font-weight: bold; letter-spacing: 1px; margin-bottom: 4px; text-transform: uppercase; transition: color 0.3s; }
         .stat-val { font-size: 18px; font-weight: bold; color: #fff; font-family: monospace; }
 
         .game-columns { display: flex; align-items: flex-start; gap: 15px; }
         .col-left { display: flex; flex-direction: column; gap: 15px; width: 150px; }
-        
-        .box-container { background: #000; border: 1px solid var(--accent); display: flex; flex-direction: column; align-items: center; position: relative; width: 100%; padding-bottom: 5px; }
-        .box-header { width: 100%; text-align: center; font-size: 12px; color: var(--accent); padding: 5px 0; font-weight: bold; }
-        
-        .main-board-wrap { border: 2px solid var(--accent); background: #000; box-shadow: 0 0 20px var(--glow-strong); position: relative; }
+        .box-container { background: #000; border: 1px solid var(--accent); box-shadow: 0 0 8px var(--glow); display: flex; flex-direction: column; align-items: center; position: relative; width: 100%; box-sizing: border-box; padding-bottom: 5px; transition: border-color 0.3s, box-shadow 0.3s; }
+        .box-header { width: 100%; text-align: center; font-size: 12px; color: var(--accent); padding-top: 5px; padding-bottom: 5px; font-weight: bold; transition: color 0.3s; }
+        .box-hold { height: 100px; justify-content: flex-start; }
+        .box-stat-side { height: 60px; justify-content: center; padding: 0; }
+        .col-center { position: relative; }
+        .main-board-wrap { border: 2px solid var(--accent); background: #000; box-shadow: 0 0 20px var(--glow-strong); position: relative; transition: border-color 0.3s, box-shadow 0.3s; }
         .col-right { display: flex; flex-direction: column; width: 150px; }
-        
+        .box-next { height: 400px; justify-content: flex-start; }
+        .side-canvas { width: 100%; display: block; }
         .garbage-container { width: 12px; height: 900px; background: #111; border: 1px solid #333; position: absolute; left: -20px; overflow: hidden; }
         .garbage-fill { position: absolute; bottom: 0; width: 100%; background: #ff0033; transition: height 0.2s; }
-
         #ffa-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
         .mini-card { display: flex; flex-direction: column; align-items: center; background: #000; border: 1px solid #333; padding: 5px; }
 
-        /* OVERLAYS & UTILS */
-        #home-btn { position: fixed; top: 20px; left: 20px; z-index: 2000; padding: 10px 25px; background: #ff0033; color: #fff; border: none; font-weight: 900; cursor: pointer; }
-        .hidden { display: none !important; }
-        
-        .overlay { position: absolute; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 150; display: flex; justify-content: center; align-items: center; flex-direction: column; pointer-events: none; }
-        #cnt-txt { font-size: 120px; font-weight: 900; color: #fff; }
-        
-        /* Floating Text */
-        .float-text { position: absolute; left: 50%; transform: translateX(-50%); font-weight: 900; opacity: 0; pointer-events: none; transition: 0.1s; text-align: center; width: 300px; z-index: 50; }
-        .action-text { top: 250px; font-size: 36px; color: #fff; letter-spacing: 2px; }
-        .combo-text { top: 200px; font-size: 28px; color: #ffcc00; }
-        
-        canvas { display: block; }
-        
-        /* Kill Feed & Chat */
-        #kill-feed { position: absolute; bottom: 20px; left: 20px; width: 300px; display: flex; flex-direction: column; gap: 5px; pointer-events: none; z-index: 100; }
-        .feed-msg { background: rgba(255,0,0,0.2); color: #ff5555; padding: 5px; border-left: 3px solid #ff5555; font-family: monospace; }
-        
+        #home-btn { position: fixed; top: 20px; left: 20px; z-index: 2000; padding: 10px 25px; background: #ff0033; color: #fff; border: none; font-weight: 900; cursor: pointer; box-shadow: 0 0 10px rgba(255, 0, 51, 0.4); font-family: 'Segoe UI', sans-serif; letter-spacing: 1px; }
+        #home-btn:hover { background: #ff3355; transform: scale(1.05); }
+
         #chat-container { position: fixed; bottom: 0; right: 0; width: 320px; z-index: 200; display: flex; flex-direction: column; }
         #chat-header { background: #222; padding: 5px; display: flex; justify-content: flex-end; }
+        #chat-close { background: #ff0000; color: white; border: none; cursor: pointer; font-weight: bold; width: 24px; height: 24px; border-radius: 2px; display:flex; align-items:center; justify-content:center; }
         #chat-history { height: 200px; background: rgba(0,0,0,0.9); overflow-y: auto; padding: 10px; font-family: monospace; font-size: 12px; }
-        #chat-input { padding: 10px; border: none; outline: none; }
-        #chat-open-btn { position: fixed; bottom: 10px; right: 10px; z-index: 190; padding: 10px 20px; background: #000; color: var(--accent); border: 1px solid var(--accent); cursor: pointer; }
+        #chat-input { background: #fff; color: #000; border: none; padding: 10px; font-family: 'Segoe UI', sans-serif; outline: none; }
+        .chat-line { margin-bottom: 4px; word-wrap: break-word; }
+        .chat-user { font-weight: bold; color: var(--accent); }
+        #chat-open-btn { position: fixed; bottom: 10px; right: 10px; z-index: 190; padding: 10px 20px; background: #000; color: var(--accent); border: 1px solid var(--accent); box-shadow: 0 0 5px var(--glow); font-weight: bold; cursor: pointer; font-family: monospace; display: none; }
+        #chat-open-btn:hover { background: #111; }
+
+        .float-text { position: absolute; left: 50%; transform: translateX(-50%); font-weight: 900; opacity: 0; pointer-events: none; transition: 0.1s; text-align: center; width: 300px; text-shadow: 0 4px 8px rgba(0,0,0,0.9); font-style: italic; z-index: 50; }
+        .action-text { top: 250px; font-size: 36px; color: #fff; letter-spacing: 2px; }
+        .combo-text { top: 200px; font-size: 28px; color: #ffcc00; }
+        .b2b-text { top: 160px; font-size: 18px; color: var(--accent); letter-spacing: 2px; }
+        .sent-text { top: 300px; font-size: 50px; color: #ff0055; font-weight: 900; }
+
+        /* --- RESULTS OVERLAY (THE COOL VERSION) --- */
+        .overlay { position: absolute; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 150; display: flex; justify-content: center; align-items: center; flex-direction: column; pointer-events: none; }
+        .hidden { display: none !important; }
+        #cnt-txt { font-size: 120px; font-weight: 900; color: #fff; }
+        
+        #results-table { 
+            border-collapse: separate; border-spacing: 0 10px; 
+            margin-top: 20px; font-family: monospace; font-size: 20px; width: 700px; 
+        }
+        #results-table th { 
+            color: var(--accent); padding: 15px; border-bottom: 2px solid var(--accent); 
+            text-transform: uppercase; letter-spacing: 2px;
+        }
+        #results-table td { 
+            padding: 15px; background: rgba(255,255,255,0.05); text-align: center; color: #fff; 
+            border-top: 1px solid #333; border-bottom: 1px solid #333;
+        }
+        #results-table td:first-child { border-left: 1px solid #333; border-radius: 5px 0 0 5px; }
+        #results-table td:last-child { border-right: 1px solid #333; border-radius: 0 5px 5px 0; }
+        
+        .rank-1 { color: #ffcc00 !important; font-weight: bold; text-shadow: 0 0 10px #ffcc00; }
+
+        #kill-feed { position: absolute; bottom: 20px; left: 20px; width: 300px; display: flex; flex-direction: column; gap: 5px; pointer-events: none; z-index: 100; }
+        .feed-msg { background: rgba(255,0,0,0.2); color: #ff5555; padding: 5px; border-left: 3px solid #ff5555; font-family: monospace; }
+
+        @keyframes pop { from { transform: scale(1); } to { transform: scale(1.1); } }
+        canvas { display: block; }
     </style>
 </head>
 <body>
@@ -296,13 +329,13 @@
         
         <div id="ffa-grid"></div> 
     </div>
-    <script>
+<script>
         // --- CONFIGURATION ---
         const COLS=4, ROWS=30, B_SIZE=30; 
         const PIECES=[[[1,1,1,1]],[[1,1],[1,1]],[[0,1,0],[1,1,1]],[[1,1,0],[0,1,1]],[[0,1,1],[1,1,0]],[[1,0,0],[1,1,1]],[[0,0,1],[1,1,1]]];
         const COLORS=['#31C7EF','#F7D308','#FF69B4','#EF2029','#42B642','#9D00FF','#EF7921'];
         
-        // SRS Kicks (Super Rotation System)
+        // SRS Kicks
         const OFFSETS_JLSTZ = [
             [[0,0], [0,0], [0,0], [0,0], [0,0]], [[0,0], [1,0], [1,-1], [0,2], [1,2]],
             [[0,0], [0,0], [0,0], [0,0], [0,0]], [[0,0], [-1,0], [-1,-1], [0,2], [-1,2]],
@@ -430,8 +463,11 @@
             navTo('scr-wait');
             document.getElementById('wait-msg').innerText = "JOINING FFA LOBBY...";
             setTheme('#ff9900'); 
-            // FIX: Explicitly set mode to 'lobby' so the game knows we are waiting for online play
+            
+            // FIX: Set mode to 'lobby' so the game accepts the start signal
             gameMode = 'lobby'; 
+            
+            if(!socket) connect();
             socket.emit('join_ffa');
         }
 
@@ -497,22 +533,34 @@
             });
 
             socket.on('start_countdown', data => {
-                // FIX: Removed the 'if gameMode == zen' check. 
-                // If the server sends a start signal, we obey it.
+                // Ignore if in Zen/APM, but ALLOW if in 'lobby' or 'ffa'
+                if(gameMode === 'zen' || gameMode === 'apm_test') return;
+                
                 gameMode = 'ffa';
                 setTheme('#ff9900'); 
                 setupGameUI();
                 document.getElementById('overlay-results').classList.add('hidden'); 
+                
                 const ov = document.getElementById('overlay-cnt');
                 const tx = document.getElementById('cnt-txt');
                 ov.classList.remove('hidden');
+                
                 let n = data.duration;
                 tx.innerText = n;
                 inputLocked = true;
-                const iv = setInterval(()=>{ n--; if(n>0) tx.innerText = n; else { clearInterval(iv); ov.classList.add('hidden'); } }, 1000);
+                
+                const iv = setInterval(()=>{ 
+                    n--; 
+                    if(n > 0) tx.innerText = n; 
+                    else { 
+                        clearInterval(iv); 
+                        ov.classList.add('hidden'); 
+                    } 
+                }, 1000);
             });
 
             socket.on('match_start', data => {
+                if(gameMode === 'zen' || gameMode === 'apm_test') return;
                 inputLocked = false;
                 gameMode = data.mode;
                 isSpectator = false;
@@ -520,17 +568,18 @@
             });
 
             socket.on('receive_garbage', n => { 
-                if (!isSpectator && gameMode === 'ffa') p1.receiveGarbage(n); 
+                if(gameMode === 'ffa' && !isSpectator) p1.receiveGarbage(n); 
             });
             
             socket.on('enemy_board_update', d => { 
-                drawEnemy(d.id, d.grid); 
+                if(gameMode === 'ffa') drawEnemy(d.id, d.grid); 
             });
             
             socket.on('elimination', d => { feed(`${d.username} eliminated by ${d.killer}!`); });
             socket.on('request_win_stats', () => { socket.emit('match_won', p1.getStats()); });
             
             socket.on('match_summary', results => {
+                if(gameMode === 'zen' || gameMode === 'apm_test') return;
                 gameActive = false;
                 const ov = document.getElementById('overlay-results');
                 const tb = document.getElementById('results-body');
@@ -555,9 +604,11 @@
             });
             
             socket.on('lobby_reset', () => { 
+                if(gameMode === 'zen' || gameMode === 'apm_test') return;
                 document.getElementById('overlay-results').classList.add('hidden'); 
                 if(gameMode === 'ffa' || gameMode === 'lobby') goHome(); 
             });
+            
             socket.on('receive_chat', data => {
                 const box = document.getElementById('chat-history');
                 box.innerHTML += `<div class="chat-line"><span class="chat-user">${data.user}:</span> ${data.text}</div>`;
@@ -565,7 +616,9 @@
             });
             socket.on('update_my_wins', w => document.getElementById('display-wins').innerText = w);
             socket.on('update_my_apm', a => document.getElementById('display-apm').innerText = a);
+            
             socket.on('ffa_spectate', d => {
+                if(gameMode === 'zen' || gameMode === 'apm_test') return;
                 document.getElementById('wait-msg').innerText = "SPECTATING...";
                 setTimeout(() => { isSpectator=true; gameMode='ffa'; setupGameUI(); setupOnlineGame(d.seed, d.players); }, 1000);
             });

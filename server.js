@@ -6,10 +6,10 @@ const io = require('socket.io')(http);
 const path = require('path');
 const fs = require('fs');
 
-// FIXED: Point to the 'public' folder since that is where your index.html is
+// Serve files from the 'public' folder
 app.use(express.static(path.join(__dirname, 'public')));
 
-// FIXED: Explicit route to load the game
+// Explicit route to load the game
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -33,8 +33,8 @@ loadAccounts();
 
 // --- GAME STATE ---
 let ffaLobby = {
-    players: [],
-    state: 'waiting', 
+    players: [],      // { id, username, alive, damageLog }
+    state: 'waiting', // waiting, countdown, playing, finished
     seed: 12345,
     matchStats: [],
     startTime: 0,
@@ -110,8 +110,8 @@ io.on('connection', (socket) => {
                 checkWinCondition();
             }
             
-            // Allow lobby to reset if empty
-            if (ffaLobby.players.length < 1 && ffaLobby.state === 'countdown') {
+            // If lobby drops below 2 players during countdown, cancel start
+            if (ffaLobby.players.length < 2 && ffaLobby.state === 'countdown') {
                 ffaLobby.state = 'waiting';
                 clearTimeout(ffaLobby.timer);
                 io.to('lobby_ffa').emit('lobby_reset');
@@ -126,15 +126,14 @@ io.on('connection', (socket) => {
         if (!socket.username) return;
         
         await leaveFFA(); 
-        await socket.join('lobby_ffa');
         
+        await socket.join('lobby_ffa');
         const pData = { id: socket.id, username: socket.username, alive: true, damageLog: [] };
         ffaLobby.players.push(pData);
 
         if (ffaLobby.state === 'waiting' || ffaLobby.state === 'finished') {
             io.to('lobby_ffa').emit('lobby_update', { count: ffaLobby.players.length });
-            // FIXED: Start with 1 player for testing
-            if(ffaLobby.players.length >= 1) tryStartGame();
+            tryStartGame();
         } else {
             pData.alive = false;
             const living = ffaLobby.players.filter(p => p.alive).map(p => ({ id: p.id, username: p.username }));
@@ -200,8 +199,8 @@ io.on('connection', (socket) => {
 // --- HELPER LOGIC ---
 
 function tryStartGame() {
-    // FIXED: Allow 1 player start for testing
-    if (ffaLobby.state === 'waiting' && ffaLobby.players.length >= 1) {
+    // RESTORED: Must have 2+ players to start
+    if (ffaLobby.state === 'waiting' && ffaLobby.players.length >= 2) {
         ffaLobby.state = 'countdown';
         ffaLobby.seed = Math.floor(Math.random() * 1000000);
         ffaLobby.matchStats = [];
@@ -223,15 +222,16 @@ function tryStartGame() {
 
 function checkWinCondition() {
     const survivors = ffaLobby.players.filter(p => p.alive);
-    // Don't auto-win if only 1 person started (Solo Test Mode)
-    const isSoloTest = ffaLobby.players.length === 1;
-
-    if (survivors.length === 0) {
+    
+    // RESTORED: End game when 1 player is left (The Winner)
+    if (survivors.length <= 1) {
         ffaLobby.state = 'finished';
-        finishGame(null);
-    } else if (!isSoloTest && survivors.length === 1) {
-        ffaLobby.state = 'finished';
-        io.to(survivors[0].id).emit('request_win_stats');
+        
+        if (survivors.length === 1) {
+            io.to(survivors[0].id).emit('request_win_stats');
+        } else {
+            finishGame(null); // Draw or everyone left
+        }
     }
 }
 
@@ -280,11 +280,12 @@ function finishGame(winnerName) {
     io.to('lobby_ffa').emit('match_summary', results);
 
     setTimeout(() => {
-        ffaLobby.state = 'waiting';
-        io.to('lobby_ffa').emit('lobby_reset');
-        if (ffaLobby.players.length >= 1) {
+        // If enough players remain, restart automatically
+        if (ffaLobby.players.length >= 2) {
             tryStartGame();
         } else {
+            ffaLobby.state = 'waiting';
+            io.to('lobby_ffa').emit('lobby_reset');
             io.to('lobby_ffa').emit('lobby_update', { count: ffaLobby.players.length });
         }
     }, 5000);

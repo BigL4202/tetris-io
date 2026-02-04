@@ -35,7 +35,12 @@
         /* --- MENUS --- */
         #menu-container { position: absolute; z-index: 100; background: rgba(0,0,0,0.95); width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         
-        .screen { display: none; flex-direction: column; align-items: center; width: 100%; max-width: 1200px; transition: transform 0.3s ease; }
+        /* FIX: Scaled down to 95% for PC users as requested */
+        .screen { 
+            display: none; flex-direction: column; align-items: center; width: 100%; max-width: 1200px; 
+            transition: transform 0.3s ease; 
+            transform: scale(0.95); 
+        }
         .active { display: flex; }
         
         h1 { font-size: 60px; margin-bottom: 30px; letter-spacing: 4px; text-align: center; font-weight: 900; text-transform: uppercase; }
@@ -51,8 +56,8 @@
 
         /* --- THE "JOHN" EFFECT --- */
         .user-john {
-            color: #7851a9 !important; /* Royal Purple */
-            font-family: 'Brush Script MT', cursive; /* Cursive */
+            color: #7851a9 !important;
+            font-family: 'Brush Script MT', cursive; 
             font-size: 1.2em;
             text-shadow: 0 0 5px gold, 0 0 10px gold;
             animation: goldPulse 2s infinite alternate;
@@ -84,7 +89,6 @@
         .btn-apm { background: #ff5555; color: #fff; }
         .btn-ffa { background: #ff9900; color: #000; }
         .btn-blue { background: #00a8ff; color: #fff; } 
-        /* New Pink Button */
         .btn-pink { background: #ff00de; color: #fff; }
 
         #main-split { display: flex; flex-direction: row; gap: 30px; align-items: flex-start; margin-top: 10px; }
@@ -105,9 +109,8 @@
         .lb-item:hover { background: rgba(255,255,255,0.05); }
         .rank-num { color: #ffcc00; font-weight: bold; margin-right: 5px; } 
         
-        /* SCROLL TEXT */
         .scroll-text {
-            max-height: 400px; /* Extended height */
+            max-height: 400px;
             overflow-y: auto; text-align: left; font-size: 14px; color: #ccc; line-height: 1.6;
             padding-right: 10px; width: 100%;
         }
@@ -115,8 +118,21 @@
         .scroll-text::-webkit-scrollbar { width: 5px; }
         .scroll-text::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
         
-        /* IPAD SCALING */
-        @media only screen and (max-width: 1400px) { .screen { transform: scale(0.8); transform-origin: center center; width: 100%; } }
+        /* --- IPAD FIXES --- */
+        @media only screen and (max-width: 1400px) { 
+            /* Fix brightness for iPad - making grid much more visible */
+            body {
+                background-image: 
+                    radial-gradient(circle at center, transparent 0%, #000 90%), 
+                    linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px), 
+                    linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px) !important;
+            }
+            .screen { 
+                transform: scale(0.8); 
+                transform-origin: center center;
+                width: 100%;
+            }
+        }
         @media only screen and (max-width: 1000px) { .screen { transform: scale(0.65); } }
 
         /* STATS & CHANGELOG */
@@ -191,7 +207,24 @@
         #chat-header { background: #222; padding: 5px; display: flex; justify-content: flex-end; }
         #chat-history { height: 200px; background: rgba(0,0,0,0.9); overflow-y: auto; padding: 10px; font-family: monospace; font-size: 12px; }
         #chat-input { padding: 10px; border: none; outline: none; }
-        #chat-open-btn { position: fixed; bottom: 10px; right: 10px; z-index: 190; padding: 10px 20px; background: #000; color: var(--accent); border: 1px solid var(--accent); cursor: pointer; }
+        
+        #chat-open-btn { 
+            position: fixed; bottom: 10px; right: 10px; z-index: 190; 
+            padding: 10px 20px; background: #000; color: var(--accent); 
+            border: 1px solid var(--accent); box-shadow: 0 0 5px var(--glow); 
+            font-weight: bold; cursor: pointer; font-family: monospace; display: none; 
+        }
+        #chat-open-btn:hover { background: #111; }
+        
+        /* NEW CHAT BADGE */
+        .chat-badge {
+            position: absolute; top: -8px; right: -8px;
+            background: #ff0033; color: white; border-radius: 50%;
+            width: 20px; height: 20px; font-size: 11px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; box-shadow: 0 0 5px #ff0033;
+        }
+
         canvas { display: block; }
     </style>
 </head>
@@ -282,7 +315,10 @@
     
     <div id="kill-feed"></div>
 
-    <button id="chat-open-btn" onclick="toggleChat()">CHAT</button>
+    <button id="chat-open-btn" onclick="toggleChat()">
+        CHAT
+        <span id="chat-badge" class="chat-badge hidden">0</span>
+    </button>
     <div id="chat-container" class="hidden">
         <div id="chat-header"><button id="chat-close" onclick="toggleChat()">X</button></div>
         <div id="chat-history"></div>
@@ -338,7 +374,6 @@
         const PIECES=[[[1,1,1,1]],[[1,1],[1,1]],[[0,1,0],[1,1,1]],[[1,1,0],[0,1,1]],[[0,1,1],[1,1,0]],[[1,0,0],[1,1,1]],[[0,0,1],[1,1,1]]];
         const COLORS=['#31C7EF','#F7D308','#FF69B4','#EF2029','#42B642','#9D00FF','#EF7921'];
         
-        // SRS Kicks
         const OFFSETS_JLSTZ = [
             [[0,0], [0,0], [0,0], [0,0], [0,0]], [[0,0], [1,0], [1,-1], [0,2], [1,2]],
             [[0,0], [0,0], [0,0], [0,0], [0,0]], [[0,0], [-1,0], [-1,-1], [0,2], [-1,2]],
@@ -358,18 +393,18 @@
         let gameMode='zen', startTime=0, apmTimer=null;
         let statsCache = {}; 
         
-        // --- HELPER: THE "JOHN" EFFECT ---
+        // Chat Notification State
+        let isChatOpen = false;
+        let unreadChatCount = 0;
+
         function formatUserHTML(username) {
             if (!username) return 'Guest';
-            // Case-insensitive check for "john"
             if (username.toLowerCase().trim() === 'john') {
-                // Apply the special class defined in CSS
                 return `<span class="user-john">${username.toUpperCase()}</span>`;
             }
-            return username; // Normal text for everyone else
+            return username; 
         }
 
-        // --- UTILS ---
         function setTheme(hex) {
             const root = document.documentElement;
             root.style.setProperty('--accent', hex);
@@ -407,13 +442,23 @@
         function toggleChat() {
             const chat = document.getElementById('chat-container');
             const btn = document.getElementById('chat-open-btn');
-            if (chat.style.display === 'none' || chat.classList.contains('hidden')) {
-                chat.style.display = 'flex';
+            const badge = document.getElementById('chat-badge');
+            
+            if (chat.classList.contains('hidden')) {
+                // Open Chat
                 chat.classList.remove('hidden');
-                btn.style.display = 'none'; 
+                btn.style.display = 'none';
+                isChatOpen = true;
+                
+                // Clear notification
+                unreadChatCount = 0;
+                badge.innerText = '0';
+                badge.classList.add('hidden');
             } else {
-                chat.style.display = 'none';
-                btn.style.display = 'block'; 
+                // Close Chat
+                chat.classList.add('hidden');
+                btn.style.display = 'block';
+                isChatOpen = false;
             }
         }
 
@@ -426,14 +471,11 @@
         }
 
         function goHome() {
-            // Full Reset
             gameActive = false;
             gameMode = 'menu';
             isSpectator = false;
             clearTimeout(apmTimer);
-            
             if (socket) socket.emit('leave_lobby');
-            
             document.getElementById('game-ui').classList.add('hidden');
             document.getElementById('home-btn').classList.add('hidden');
             document.getElementById('kill-feed').innerHTML = '';
@@ -506,11 +548,12 @@
             socket.on('login_response', data => {
                 if(data.success) {
                     navTo('scr-main');
-                    // APPLY JOHN EFFECT HERE
                     document.getElementById('display-user').innerHTML = formatUserHTML(data.username);
                     document.getElementById('display-wins').innerText = data.wins;
                     document.getElementById('display-apm').innerText = data.bestAPM;
-                    document.getElementById('chat-container').classList.remove('hidden'); 
+                    // Don't auto open chat anymore, keep it closed so button shows
+                    // document.getElementById('chat-container').classList.remove('hidden'); 
+                    document.getElementById('chat-open-btn').style.display = 'block';
                 } else {
                     alert(data.msg);
                 }
@@ -520,14 +563,12 @@
                 const winDiv = document.getElementById('lb-wins');
                 winDiv.innerHTML = '';
                 data.wins.forEach((p, i) => { 
-                    // APPLY JOHN EFFECT TO LEADERBOARD
                     winDiv.innerHTML += `<div class="lb-item"><span class="rank-num">${i+1}.</span> <span>${formatUserHTML(p.name)}</span> <span style="font-weight:bold; color:var(--accent);">${p.val} W</span></div>`; 
                 });
                 const cmbDiv = document.getElementById('lb-combo');
                 cmbDiv.innerHTML = '';
                 if(data.combos) {
                     data.combos.forEach((p, i) => { 
-                        // APPLY JOHN EFFECT TO COMBO BOARD
                         cmbDiv.innerHTML += `<div class="lb-item"><span class="rank-num">${i+1}.</span> <span>${formatUserHTML(p.name)}</span> <span style="font-weight:bold; color:var(--accent);">${p.val} x</span></div>`; 
                     });
                 }
@@ -546,7 +587,6 @@
                     let avgAPM = h.length ? (h.reduce((sum, x) => sum + (x.apm||0), 0) / h.length).toFixed(0) : 0;
                     const div = document.createElement('div');
                     div.className = 'player-item';
-                    // Apply effect to stats list
                     div.innerHTML = `<span>${formatUserHTML(user)}</span> <span style="color:#666">${avgAPM} APM</span>`;
                     div.onclick = () => {
                         document.querySelectorAll('.player-item').forEach(el=>el.classList.remove('selected'));
@@ -563,11 +603,9 @@
                 setTheme('#ff9900'); 
                 setupGameUI();
                 document.getElementById('overlay-results').classList.add('hidden'); 
-                
                 const ov = document.getElementById('overlay-cnt');
                 const tx = document.getElementById('cnt-txt');
                 ov.classList.remove('hidden');
-                
                 let n = data.duration;
                 tx.innerText = n;
                 inputLocked = true;
@@ -590,7 +628,6 @@
                 if(gameMode === 'ffa') drawEnemy(d.id, d.grid); 
             });
             socket.on('elimination', d => { 
-                // Apply effect to Kill Feed
                 feed(`${formatUserHTML(d.username)} eliminated by ${formatUserHTML(d.killer)}!`); 
             });
             socket.on('request_win_stats', () => { socket.emit('match_won', p1.getStats()); });
@@ -627,10 +664,18 @@
             
             socket.on('receive_chat', data => {
                 const box = document.getElementById('chat-history');
-                // Apply effect to Chat
                 box.innerHTML += `<div class="chat-line"><span class="chat-user">${formatUserHTML(data.user)}:</span> ${data.text}</div>`;
                 box.scrollTop = box.scrollHeight;
+                
+                // --- CHAT NOTIFICATION LOGIC ---
+                if (!isChatOpen) {
+                    unreadChatCount++;
+                    const badge = document.getElementById('chat-badge');
+                    badge.innerText = unreadChatCount;
+                    badge.classList.remove('hidden');
+                }
             });
+            
             socket.on('update_my_wins', w => document.getElementById('display-wins').innerText = w);
             socket.on('update_my_apm', a => document.getElementById('display-apm').innerText = a);
             
@@ -696,7 +741,6 @@
                 if(p.id !== socket.id) {
                     const d = document.createElement('div');
                     d.className = 'mini-card';
-                    // Apply effect to opponent cards
                     d.innerHTML = `<div style="font-size:10px; color:#888">${formatUserHTML(p.username)}</div><canvas id="cvs_${p.id}" width="80" height="520"></canvas>`;
                     grid.appendChild(d);
                 }
@@ -715,7 +759,6 @@
         function feed(msg) {
             const f = document.getElementById('kill-feed');
             const d = document.createElement('div');
-            // Allow HTML for the John effect
             d.className='feed-msg'; d.innerHTML=msg; 
             f.appendChild(d); setTimeout(()=>d.remove(),4000);
         }

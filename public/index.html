@@ -23,13 +23,8 @@
             background-attachment: fixed;
             color: #fff; 
             font-family: 'Segoe UI', sans-serif; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            height: 100vh; 
-            margin: 0; 
-            overflow: hidden; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            height: 100vh; margin: 0; overflow: hidden; 
         }
         
         ::-webkit-scrollbar { width: 8px; }
@@ -40,33 +35,37 @@
         /* --- MENUS --- */
         #menu-container { position: absolute; z-index: 100; background: rgba(0,0,0,0.95); width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         
-        /* Adjusted width to fit 3 columns */
         .screen { display: none; flex-direction: column; align-items: center; width: 100%; max-width: 1200px; transition: transform 0.3s ease; }
         .active { display: flex; }
         
         h1 { font-size: 60px; margin-bottom: 30px; letter-spacing: 4px; text-align: center; font-weight: 900; text-transform: uppercase; }
         h1 span { 
             background: linear-gradient(135deg, var(--accent), #fff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 30px var(--glow);
-            animation: titlePulse 3s infinite ease-in-out;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px var(--glow); animation: titlePulse 3s infinite ease-in-out;
         }
         @keyframes titlePulse {
             0%, 100% { filter: drop-shadow(0 0 10px var(--glow)); }
             50% { filter: drop-shadow(0 0 25px var(--accent)); }
         }
 
+        /* --- THE "JOHN" EFFECT --- */
+        .user-john {
+            color: #7851a9 !important; /* Royal Purple */
+            font-family: 'Brush Script MT', cursive; /* Cursive */
+            font-size: 1.2em;
+            text-shadow: 0 0 5px gold, 0 0 10px gold;
+            animation: goldPulse 2s infinite alternate;
+        }
+        @keyframes goldPulse {
+            0% { text-shadow: 0 0 5px gold; }
+            100% { text-shadow: 0 0 20px gold, 0 0 10px #ff00ff; }
+        }
+
         .tech-panel {
-            background: rgba(10, 10, 10, 0.8);
-            border: 1px solid var(--accent);
-            box-shadow: 0 0 20px var(--glow);
-            border-radius: 8px;
-            padding: 30px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            backdrop-filter: blur(10px);
+            background: rgba(10, 10, 10, 0.8); border: 1px solid var(--accent);
+            box-shadow: 0 0 20px var(--glow); border-radius: 8px; padding: 30px;
+            display: flex; flex-direction: column; align-items: center; backdrop-filter: blur(10px);
         }
 
         .input-std { background: #111; border: 1px solid #333; color: #fff; padding: 12px; font-size: 18px; border-radius: 4px; margin: 10px 0; width: 300px; text-align: center; transition: 0.3s; }
@@ -85,10 +84,10 @@
         .btn-apm { background: #ff5555; color: #fff; }
         .btn-ffa { background: #ff9900; color: #000; }
         .btn-blue { background: #00a8ff; color: #fff; } 
+        /* New Pink Button */
+        .btn-pink { background: #ff00de; color: #fff; }
 
         #main-split { display: flex; flex-direction: row; gap: 30px; align-items: flex-start; margin-top: 10px; }
-        
-        /* New 3-Column Layout Classes */
         .menu-col { width: 340px; display: flex; flex-direction: column; align-items: center; }
         
         .user-info { margin-bottom: 20px; font-size: 16px; color: #ccc; text-align: center; width: 100%; line-height: 1.6; border-bottom: 1px solid #333; padding-bottom: 15px; }
@@ -106,59 +105,43 @@
         .lb-item:hover { background: rgba(255,255,255,0.05); }
         .rank-num { color: #ffcc00; font-weight: bold; margin-right: 5px; } 
         
-        /* NEW: Scrollable Text Box Logic */
+        /* SCROLL TEXT */
         .scroll-text {
-            max-height: 350px;
-            overflow-y: auto;
-            text-align: left;
-            font-size: 14px;
-            color: #ccc;
-            line-height: 1.6;
-            padding-right: 10px;
-            width: 100%;
+            max-height: 400px; /* Extended height */
+            overflow-y: auto; text-align: left; font-size: 14px; color: #ccc; line-height: 1.6;
+            padding-right: 10px; width: 100%;
         }
         .scroll-text p { margin-bottom: 15px; }
         .scroll-text::-webkit-scrollbar { width: 5px; }
         .scroll-text::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
-        .scroll-text::-webkit-scrollbar-track { background: #222; }
+        
+        /* IPAD SCALING */
+        @media only screen and (max-width: 1400px) { .screen { transform: scale(0.8); transform-origin: center center; width: 100%; } }
+        @media only screen and (max-width: 1000px) { .screen { transform: scale(0.65); } }
 
-        /* --- IPAD MENU FIX (SCALING) --- */
-        @media only screen and (max-width: 1400px) { 
-            .screen { 
-                transform: scale(0.8); /* Scale menu down to fit 3 columns */
-                transform-origin: center center;
-                width: 100%;
-            }
-        }
-        @media only screen and (max-width: 1000px) { 
-            .screen { transform: scale(0.65); } 
-        }
-
-        /* STATS PAGE */
+        /* STATS & CHANGELOG */
         #stats-layout { display: flex; width: 900px; height: 550px; gap: 20px; }
         #stats-list { width: 250px; background: #050505; border: 1px solid var(--accent); box-shadow: 0 0 15px var(--glow); border-radius: 4px; overflow-y: auto; padding: 10px; }
-        #stats-detail { flex: 1; background: #050505; border: 1px solid var(--accent); box-shadow: 0 0 15px var(--glow); border-radius: 4px; padding: 20px; display: flex; flex-direction: column; overflow: hidden; }
+        #stats-detail, #changelog-box { flex: 1; background: #050505; border: 1px solid var(--accent); box-shadow: 0 0 15px var(--glow); border-radius: 4px; padding: 20px; display: flex; flex-direction: column; overflow: hidden; }
+        
         .player-item { padding: 12px; cursor: pointer; border-bottom: 1px solid #222; color: #888; font-weight: bold; transition: 0.2s; }
         .player-item:hover { background: #111; color: #fff; padding-left: 15px; }
         .player-item.selected { background: var(--glow); color: var(--accent); border-color: var(--accent); }
+        
         .stat-user-title { font-size: 32px; color: var(--accent); font-weight: 900; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px var(--glow); }
         .stat-section-label { font-size: 12px; color: #666; margin-bottom: 8px; letter-spacing: 1px; font-weight: bold; border-bottom: 1px solid #333; padding-bottom: 4px; width: 100%; display:block; }
         .stat-row { display: flex; gap: 15px; margin-bottom: 20px; width: 100%; }
-        .stat-card { flex: 1; background: #111; border: 1px solid #333; border-radius: 4px; padding: 10px; text-align: center; transition: 0.2s; }
-        .stat-card:hover { border-color: var(--accent); box-shadow: 0 0 5px var(--glow); transform: translateY(-2px); }
-        .stat-card-label { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+        .stat-card { flex: 1; background: #111; border: 1px solid #333; border-radius: 4px; padding: 10px; text-align: center; }
         .stat-card-val { font-size: 20px; color: #fff; font-weight: 900; font-family: monospace; }
         .stat-card-val.highlight { color: #ffcc00; }
         .history-wrapper { flex: 1; overflow-y: auto; border: 1px solid #222; background: #0a0a0a; border-radius: 4px; }
         .history-table { width: 100%; border-collapse: collapse; font-size: 12px; font-family: monospace; }
         .history-table th { background: #111; color: var(--accent); padding: 10px; text-align: center; position: sticky; top: 0; border-bottom: 1px solid #333; z-index: 2; }
         .history-table td { padding: 8px; border-bottom: 1px solid #222; text-align: center; color: #ccc; }
-        .history-table tr:hover td { background: #151515; color: #fff; }
 
-        /* --- GAME UI LAYOUT --- */
+        /* GAME UI */
         .game-area { display: flex; flex-direction: row; justify-content: center; align-items: flex-start; gap: 40px; transform: scale(0.9); transition: 0.5s; }
         @media (max-height: 950px) { .game-area { transform: scale(0.75); } }
-        /* iPad Scaling - Centered */
         @media only screen and (max-width: 1200px) { .game-area { transform: scale(0.65); transform-origin: center center; } }
 
         .stats-header { display: flex; gap: 15px; margin-bottom: 10px; }
@@ -182,41 +165,15 @@
         #ffa-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
         .mini-card { display: flex; flex-direction: column; align-items: center; background: #000; border: 1px solid #333; padding: 5px; }
 
-        #home-btn { position: fixed; top: 20px; left: 20px; z-index: 2000; padding: 10px 25px; background: #ff0033; color: #fff; border: none; font-weight: 900; cursor: pointer; box-shadow: 0 0 10px rgba(255, 0, 51, 0.4); font-family: 'Segoe UI', sans-serif; letter-spacing: 1px; }
-        #home-btn:hover { background: #ff3355; transform: scale(1.05); }
-
-        #chat-container { position: fixed; bottom: 0; right: 0; width: 320px; z-index: 200; display: flex; flex-direction: column; }
-        #chat-header { background: #222; padding: 5px; display: flex; justify-content: flex-end; }
-        #chat-close { background: #ff0000; color: white; border: none; cursor: pointer; font-weight: bold; width: 24px; height: 24px; border-radius: 2px; display:flex; align-items:center; justify-content:center; }
-        #chat-history { height: 200px; background: rgba(0,0,0,0.9); overflow-y: auto; padding: 10px; font-family: monospace; font-size: 12px; }
-        #chat-input { background: #fff; color: #000; border: none; padding: 10px; font-family: 'Segoe UI', sans-serif; outline: none; }
-        .chat-line { margin-bottom: 4px; word-wrap: break-word; }
-        .chat-user { font-weight: bold; color: var(--accent); }
-        #chat-open-btn { position: fixed; bottom: 10px; right: 10px; z-index: 190; padding: 10px 20px; background: #000; color: var(--accent); border: 1px solid var(--accent); box-shadow: 0 0 5px var(--glow); font-weight: bold; cursor: pointer; font-family: monospace; display: none; }
-        #chat-open-btn:hover { background: #111; }
-
-        .float-text { position: absolute; left: 50%; transform: translateX(-50%); font-weight: 900; opacity: 0; pointer-events: none; transition: 0.1s; text-align: center; width: 300px; text-shadow: 0 4px 8px rgba(0,0,0,0.9); font-style: italic; z-index: 50; }
-        .action-text { top: 250px; font-size: 36px; color: #fff; letter-spacing: 2px; }
-        .combo-text { top: 200px; font-size: 28px; color: #ffcc00; }
-        .b2b-text { top: 160px; font-size: 18px; color: var(--accent); letter-spacing: 2px; }
-        .sent-text { top: 300px; font-size: 50px; color: #ff0055; font-weight: 900; }
-
-        .overlay { position: absolute; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 150; display: flex; justify-content: center; align-items: center; flex-direction: column; pointer-events: none; }
+        #home-btn { position: fixed; top: 20px; left: 20px; z-index: 2000; padding: 10px 25px; background: #ff0033; color: #fff; border: none; font-weight: 900; cursor: pointer; }
         .hidden { display: none !important; }
+        
+        .overlay { position: absolute; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 150; display: flex; justify-content: center; align-items: center; flex-direction: column; pointer-events: none; }
         #cnt-txt { font-size: 120px; font-weight: 900; color: #fff; }
         
-        #results-table { 
-            border-collapse: separate; border-spacing: 0 10px; 
-            margin-top: 20px; font-family: monospace; font-size: 20px; width: 700px; 
-        }
-        #results-table th { 
-            color: var(--accent); padding: 15px; border-bottom: 2px solid var(--accent); 
-            text-transform: uppercase; letter-spacing: 2px;
-        }
-        #results-table td { 
-            padding: 15px; background: rgba(255,255,255,0.05); text-align: center; color: #fff; 
-            border-top: 1px solid #333; border-bottom: 1px solid #333;
-        }
+        #results-table { border-collapse: separate; border-spacing: 0 10px; margin-top: 20px; font-family: monospace; font-size: 20px; width: 700px; }
+        #results-table th { color: var(--accent); padding: 15px; border-bottom: 2px solid var(--accent); text-transform: uppercase; letter-spacing: 2px; }
+        #results-table td { padding: 15px; background: rgba(255,255,255,0.05); text-align: center; color: #fff; border-top: 1px solid #333; border-bottom: 1px solid #333; }
         #results-table td:first-child { border-left: 1px solid #333; border-radius: 5px 0 0 5px; }
         #results-table td:last-child { border-right: 1px solid #333; border-radius: 0 5px 5px 0; }
         .rank-1 { color: #ffcc00 !important; font-weight: bold; text-shadow: 0 0 10px #ffcc00; }
@@ -224,12 +181,21 @@
         #kill-feed { position: absolute; bottom: 20px; left: 20px; width: 300px; display: flex; flex-direction: column; gap: 5px; pointer-events: none; z-index: 100; }
         .feed-msg { background: rgba(255,0,0,0.2); color: #ff5555; padding: 5px; border-left: 3px solid #ff5555; font-family: monospace; }
 
-        @keyframes pop { from { transform: scale(1); } to { transform: scale(1.1); } }
+        .float-text { position: absolute; left: 50%; transform: translateX(-50%); font-weight: 900; opacity: 0; pointer-events: none; transition: 0.1s; text-align: center; width: 300px; z-index: 50; }
+        .action-text { top: 250px; font-size: 36px; color: #fff; letter-spacing: 2px; }
+        .combo-text { top: 200px; font-size: 28px; color: #ffcc00; }
+        .b2b-text { top: 160px; font-size: 18px; color: var(--accent); letter-spacing: 2px; }
+        .sent-text { top: 300px; font-size: 50px; color: #ff0055; font-weight: 900; }
+
+        #chat-container { position: fixed; bottom: 0; right: 0; width: 320px; z-index: 200; display: flex; flex-direction: column; }
+        #chat-header { background: #222; padding: 5px; display: flex; justify-content: flex-end; }
+        #chat-history { height: 200px; background: rgba(0,0,0,0.9); overflow-y: auto; padding: 10px; font-family: monospace; font-size: 12px; }
+        #chat-input { padding: 10px; border: none; outline: none; }
+        #chat-open-btn { position: fixed; bottom: 10px; right: 10px; z-index: 190; padding: 10px 20px; background: #000; color: var(--accent); border: 1px solid var(--accent); cursor: pointer; }
         canvas { display: block; }
     </style>
 </head>
 <body>
-
     <button id="home-btn" class="hidden" onclick="goHome()">HOME</button>
 
     <div id="menu-container">
@@ -251,10 +217,10 @@
                         <p>Project A is working to releasing its 1.0 update. As of right now all account data will be wiped every update.</p>
                         <p>Project A's development has taken roughly 20 or so hours to get this far and I am paying $7 monthly for the server. If you would like to support development or want to see the servers upgraded money is greatly appreciated.</p>
                         <p>I will be making another website to submit bugs or suggestions.</p>
-                        
                         <div class="lb-header-text" style="margin-top: 25px; margin-bottom: 10px;">CUSTOM SERVERS</div>
                         <p>If anyone would like their own private server with its own custom url then I will set that up for a one time payment of $5. If your not satisfied with the performance I can refund you if the server isnt meeting your needs.</p>
                     </div>
+                    <button class="btn btn-pink" style="margin-top: 20px;" onclick="openChangelog()">CHANGELOG</button>
                 </div>
 
                 <div class="menu-col tech-panel">
@@ -273,11 +239,18 @@
                 <div class="menu-col tech-panel">
                     <div class="lb-header-text">ONLINE WIN LEADERBOARD</div>
                     <div id="lb-wins" class="lb-list"><div style="text-align:center; color:#666;">Loading...</div></div>
-                    
                     <div class="lb-header-text">HIGHEST COMBO</div>
                     <div id="lb-combo" class="lb-list"><div style="text-align:center; color:#666;">Loading...</div></div>
                 </div>
             </div>
+        </div>
+
+        <div id="scr-changelog" class="screen">
+            <h2 style="color: #ff00de; margin-bottom:10px;">CHANGELOG</h2>
+            <div style="width: 600px; height: 300px; background: #050505; border: 1px solid #ff00de; box-shadow: 0 0 15px rgba(255,0,222,0.3); border-radius: 4px; padding: 20px; display:flex; align-items:center; justify-content:center;">
+                <span style="color:#888; font-size: 18px;">nothing to see here.</span>
+            </div>
+            <button class="btn" onclick="goHome()" style="margin-top:20px; background:#222; color:#fff; border:1px solid #444;">BACK TO MENU</button>
         </div>
 
         <div id="scr-stats" class="screen">
@@ -339,7 +312,6 @@
                         <div id="s-recv" class="stat-val" style="margin-bottom:5px;">0</div>
                     </div>
                 </div>
-
                 <div class="col-center">
                     <div class="garbage-container"><div id="p1-g" class="garbage-fill"></div></div>
                     <div class="main-board-wrap">
@@ -350,7 +322,6 @@
                         <div id="pop-sent" class="float-text sent-text">+4</div>
                     </div>
                 </div>
-
                 <div class="col-right">
                     <div class="box-container">
                         <div class="box-header">NEXT</div>
@@ -359,14 +330,15 @@
                 </div>
             </div>
         </div>
-        
         <div id="ffa-grid"></div> 
     </div>
-<script>
+    <script>
+        // --- CONFIGURATION ---
         const COLS=4, ROWS=30, B_SIZE=30; 
         const PIECES=[[[1,1,1,1]],[[1,1],[1,1]],[[0,1,0],[1,1,1]],[[1,1,0],[0,1,1]],[[0,1,1],[1,1,0]],[[1,0,0],[1,1,1]],[[0,0,1],[1,1,1]]];
         const COLORS=['#31C7EF','#F7D308','#FF69B4','#EF2029','#42B642','#9D00FF','#EF7921'];
         
+        // SRS Kicks
         const OFFSETS_JLSTZ = [
             [[0,0], [0,0], [0,0], [0,0], [0,0]], [[0,0], [1,0], [1,-1], [0,2], [1,2]],
             [[0,0], [0,0], [0,0], [0,0], [0,0]], [[0,0], [-1,0], [-1,-1], [0,2], [-1,2]],
@@ -381,10 +353,23 @@
         ];
         const KICK_INDEX = { "0_1":0, "1_0":1, "1_2":2, "2_1":3, "2_3":4, "3_2":5, "3_0":6, "0_3":7 };
 
+        // --- GLOBAL STATE ---
         let socket=null, gameActive=false, inputLocked=false, isSpectator=false;
         let gameMode='zen', startTime=0, apmTimer=null;
         let statsCache = {}; 
         
+        // --- HELPER: THE "JOHN" EFFECT ---
+        function formatUserHTML(username) {
+            if (!username) return 'Guest';
+            // Case-insensitive check for "john"
+            if (username.toLowerCase().trim() === 'john') {
+                // Apply the special class defined in CSS
+                return `<span class="user-john">${username.toUpperCase()}</span>`;
+            }
+            return username; // Normal text for everyone else
+        }
+
+        // --- UTILS ---
         function setTheme(hex) {
             const root = document.documentElement;
             root.style.setProperty('--accent', hex);
@@ -441,7 +426,7 @@
         }
 
         function goHome() {
-            // CRITICAL FIX: Fully disconnect from online state
+            // Full Reset
             gameActive = false;
             gameMode = 'menu';
             isSpectator = false;
@@ -462,6 +447,10 @@
             if(!socket) return alert("Please login first.");
             socket.emit('request_all_stats');
             navTo('scr-stats');
+        }
+
+        function openChangelog() {
+            navTo('scr-changelog');
         }
 
         function startZen() {
@@ -517,7 +506,8 @@
             socket.on('login_response', data => {
                 if(data.success) {
                     navTo('scr-main');
-                    document.getElementById('display-user').innerText = data.username.toUpperCase();
+                    // APPLY JOHN EFFECT HERE
+                    document.getElementById('display-user').innerHTML = formatUserHTML(data.username);
                     document.getElementById('display-wins').innerText = data.wins;
                     document.getElementById('display-apm').innerText = data.bestAPM;
                     document.getElementById('chat-container').classList.remove('hidden'); 
@@ -530,13 +520,15 @@
                 const winDiv = document.getElementById('lb-wins');
                 winDiv.innerHTML = '';
                 data.wins.forEach((p, i) => { 
-                    winDiv.innerHTML += `<div class="lb-item"><span class="rank-num">${i+1}.</span> <span>${p.name}</span> <span style="font-weight:bold; color:var(--accent);">${p.val} W</span></div>`; 
+                    // APPLY JOHN EFFECT TO LEADERBOARD
+                    winDiv.innerHTML += `<div class="lb-item"><span class="rank-num">${i+1}.</span> <span>${formatUserHTML(p.name)}</span> <span style="font-weight:bold; color:var(--accent);">${p.val} W</span></div>`; 
                 });
                 const cmbDiv = document.getElementById('lb-combo');
                 cmbDiv.innerHTML = '';
                 if(data.combos) {
                     data.combos.forEach((p, i) => { 
-                        cmbDiv.innerHTML += `<div class="lb-item"><span class="rank-num">${i+1}.</span> <span>${p.name}</span> <span style="font-weight:bold; color:var(--accent);">${p.val} x</span></div>`; 
+                        // APPLY JOHN EFFECT TO COMBO BOARD
+                        cmbDiv.innerHTML += `<div class="lb-item"><span class="rank-num">${i+1}.</span> <span>${formatUserHTML(p.name)}</span> <span style="font-weight:bold; color:var(--accent);">${p.val} x</span></div>`; 
                     });
                 }
             });
@@ -554,7 +546,8 @@
                     let avgAPM = h.length ? (h.reduce((sum, x) => sum + (x.apm||0), 0) / h.length).toFixed(0) : 0;
                     const div = document.createElement('div');
                     div.className = 'player-item';
-                    div.innerHTML = `<span>${user}</span> <span style="color:#666">${avgAPM} APM</span>`;
+                    // Apply effect to stats list
+                    div.innerHTML = `<span>${formatUserHTML(user)}</span> <span style="color:#666">${avgAPM} APM</span>`;
                     div.onclick = () => {
                         document.querySelectorAll('.player-item').forEach(el=>el.classList.remove('selected'));
                         div.classList.add('selected');
@@ -585,11 +578,8 @@
                 if(gameMode === 'zen' || gameMode === 'apm_test') return;
                 inputLocked = false;
                 gameMode = data.mode;
-                
-                // CRITICAL FIX: Always start as player unless explicit logic elsewhere overrides
                 isSpectator = false;
                 document.getElementById('p1-root').style.opacity = '1';
-                
                 setupOnlineGame(data.seed, data.players);
             });
 
@@ -599,7 +589,10 @@
             socket.on('enemy_board_update', d => { 
                 if(gameMode === 'ffa') drawEnemy(d.id, d.grid); 
             });
-            socket.on('elimination', d => { feed(`${d.username} eliminated by ${d.killer}!`); });
+            socket.on('elimination', d => { 
+                // Apply effect to Kill Feed
+                feed(`${formatUserHTML(d.username)} eliminated by ${formatUserHTML(d.killer)}!`); 
+            });
             socket.on('request_win_stats', () => { socket.emit('match_won', p1.getStats()); });
             
             socket.on('match_summary', results => {
@@ -611,7 +604,7 @@
                 results.forEach(res => {
                     const row = `<tr>
                         <td class="${res.place===1?'rank-1':''}">${res.place}</td>
-                        <td>${res.username}</td>
+                        <td>${formatUserHTML(res.username)}</td>
                         <td>${res.durationStr}</td>
                         <td>${res.apm}</td>
                         <td>${res.pps}</td>
@@ -634,7 +627,8 @@
             
             socket.on('receive_chat', data => {
                 const box = document.getElementById('chat-history');
-                box.innerHTML += `<div class="chat-line"><span class="chat-user">${data.user}:</span> ${data.text}</div>`;
+                // Apply effect to Chat
+                box.innerHTML += `<div class="chat-line"><span class="chat-user">${formatUserHTML(data.user)}:</span> ${data.text}</div>`;
                 box.scrollTop = box.scrollHeight;
             });
             socket.on('update_my_wins', w => document.getElementById('display-wins').innerText = w);
@@ -652,7 +646,6 @@
                 }, 1000);
             });
 
-            // NEW: Handle AFK Kick
             socket.on('force_disconnect', msg => {
                 alert(msg);
                 goHome();
@@ -669,7 +662,7 @@
                 avgSent = (d.history.reduce((a,b)=>a+(b.sent||0), 0) / games).toFixed(1);
                 avgRecv = (d.history.reduce((a,b)=>a+(b.received||0), 0) / games).toFixed(1);
             }
-            let html = `<div class="stat-user-title">${user}</div>`;
+            let html = `<div class="stat-user-title">${formatUserHTML(user)}</div>`;
             html += `<span class="stat-section-label">CAREER HIGHS</span>`;
             html += `<div class="stat-row">
                 <div class="stat-card"><div class="stat-card-label">WINS</div><div class="stat-card-val highlight">${d.wins}</div></div>
@@ -703,7 +696,8 @@
                 if(p.id !== socket.id) {
                     const d = document.createElement('div');
                     d.className = 'mini-card';
-                    d.innerHTML = `<div style="font-size:10px; color:#888">${p.username}</div><canvas id="cvs_${p.id}" width="80" height="520"></canvas>`;
+                    // Apply effect to opponent cards
+                    d.innerHTML = `<div style="font-size:10px; color:#888">${formatUserHTML(p.username)}</div><canvas id="cvs_${p.id}" width="80" height="520"></canvas>`;
                     grid.appendChild(d);
                 }
             });
@@ -721,7 +715,8 @@
         function feed(msg) {
             const f = document.getElementById('kill-feed');
             const d = document.createElement('div');
-            d.className='feed-msg'; d.innerText=msg;
+            // Allow HTML for the John effect
+            d.className='feed-msg'; d.innerHTML=msg; 
             f.appendChild(d); setTimeout(()=>d.remove(),4000);
         }
 
@@ -1060,4 +1055,3 @@
     </script>
 </body>
 </html>
-

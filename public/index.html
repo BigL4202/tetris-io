@@ -53,9 +53,9 @@
             50% { filter: drop-shadow(0 0 25px var(--accent)); }
         }
 
-        /* --- CUSTOM USERNAME EFFECTS --- */
+        /* --- CUSTOM USERNAME EFFECTS (ANIMATED) --- */
         
-        /* 1. John (Purple/Gold) */
+        /* 1. John (Purple/Gold Pulse) */
         .user-john {
             color: #7851a9 !important;
             font-family: 'Brush Script MT', cursive; 
@@ -65,55 +65,94 @@
         }
         @keyframes goldPulse { 0% { text-shadow: 0 0 5px gold; } 100% { text-shadow: 0 0 20px gold, 0 0 10px #ff00ff; } }
 
-        /* 2. Cyber Glitch */
+        /* 2. Cyber Glitch (Jittery Shake) */
         .user-glitch {
             font-family: 'Courier New', monospace;
             color: #00ff41;
-            text-shadow: 2px 0 red, -2px 0 blue;
             font-weight: 900;
+            display: inline-block; /* Required for transform */
+            animation: glitchAnim 0.3s infinite;
+        }
+        @keyframes glitchAnim {
+            0% { text-shadow: 2px 0 red, -2px 0 blue; transform: translate(0,0); }
+            25% { text-shadow: -2px 0 red, 2px 0 blue; transform: translate(-1px, 1px); }
+            50% { text-shadow: 2px 0 blue, -2px 0 red; transform: translate(1px, -1px); }
+            75% { text-shadow: -2px 0 blue, 2px 0 red; transform: translate(0, 1px); }
+            100% { text-shadow: 2px 0 red, -2px 0 blue; transform: translate(0,0); }
         }
 
-        /* 3. Inferno */
+        /* 3. Inferno (Heat Haze) */
         .user-inferno {
             font-family: Impact, sans-serif;
             background: linear-gradient(to top, #ff0000, #ffcc00);
             -webkit-background-clip: text; color: transparent;
-            filter: drop-shadow(0 -2px 4px rgba(255, 69, 0, 0.8));
+            animation: infernoAnim 1.5s infinite alternate;
+        }
+        @keyframes infernoAnim {
+            0% { filter: drop-shadow(0 -2px 2px rgba(255, 69, 0, 0.6)); transform: scale(1); }
+            100% { filter: drop-shadow(0 -5px 8px rgba(255, 69, 0, 1)); transform: scale(1.05); }
         }
 
-        /* 4. Diamond */
+        /* 4. Diamond (Shimmer) */
         .user-diamond {
             font-family: Georgia, serif;
             color: #e0f7fa;
-            text-shadow: 0 0 10px #00ffff;
             font-weight: bold;
+            animation: diamondAnim 2s infinite ease-in-out;
+        }
+        @keyframes diamondAnim {
+            0% { text-shadow: 0 0 5px #00ffff; color: #b2ebf2; }
+            50% { text-shadow: 0 0 20px #ffffff, 0 0 30px #00ffff; color: #ffffff; }
+            100% { text-shadow: 0 0 5px #00ffff; color: #b2ebf2; }
         }
 
-        /* 5. RGB Gamer */
+        /* 5. RGB Gamer (Hue Cycle) */
         .user-gamer {
             font-family: Verdana, sans-serif;
             background-image: linear-gradient(45deg, #ff0000, #ffff00, #00ff00, #0000ff, #ff00ff);
             -webkit-background-clip: text; color: transparent;
             font-weight: 900;
-            animation: hueRotate 2s infinite linear;
+            animation: hueRotate 3s infinite linear;
         }
-        @keyframes hueRotate { 100% { filter: hue-rotate(360deg); } }
+        @keyframes hueRotate { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
 
-        /* 6. Synthwave */
+        /* 6. Synthwave (Neon Pulse) */
         .user-synth {
             font-family: Impact, sans-serif;
             font-style: italic;
             background: linear-gradient(180deg, #ff00cc, #3333ff);
             -webkit-background-clip: text; color: transparent;
-            text-shadow: 2px 2px 0px rgba(0,0,0,0.5);
+            animation: synthAnim 1s infinite alternate;
+        }
+        @keyframes synthAnim {
+            0% { filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.5)); }
+            100% { filter: drop-shadow(2px 2px 5px #ff00de); }
         }
 
-        /* 7. Midas Touch */
+        /* 7. Midas Touch (Moving Sheen) */
         .user-midas {
             font-family: Georgia, serif;
-            background: linear-gradient(45deg, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
+            /* Extra width for moving gradient */
+            background: linear-gradient(110deg, #bf953f 20%, #fcf6ba 40%, #bf953f 60%, #aa771c 80%);
+            background-size: 200% auto;
             -webkit-background-clip: text; color: transparent;
             font-weight: bold;
+            animation: midasAnim 3s linear infinite;
+        }
+        @keyframes midasAnim {
+            to { background-position: 200% center; }
+        }
+        
+        /* 8. Sparkle (Twinkle) */
+        .user-sparkle {
+            font-family: 'Georgia', serif;
+            color: #fff;
+            animation: sparkleAnim 1.5s infinite alternate;
+        }
+        @keyframes sparkleAnim {
+            0% { opacity: 1; text-shadow: 0 0 5px #fff, 0 0 10px #ff00de; }
+            50% { opacity: 0.8; text-shadow: 0 0 20px #fff, 0 0 30px #00ffff; }
+            100% { opacity: 1; text-shadow: 0 0 5px #fff, 0 0 10px #ff00de; }
         }
 
         .tech-panel {
@@ -1153,3 +1192,4 @@
     </script>
 </body>
 </html>
+

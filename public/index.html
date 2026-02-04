@@ -397,9 +397,11 @@
         let isChatOpen = false;
         let unreadChatCount = 0;
 
+        // --- HELPER: THE "JOHN" EFFECT (FIXED) ---
         function formatUserHTML(username) {
             if (!username) return 'Guest';
-            if (username.toLowerCase().trim() === 'john') {
+            // STRICT EQUALITY CHECK - Only "John" gets the effect
+            if (username.trim() === 'John') {
                 return `<span class="user-john">${username.toUpperCase()}</span>`;
             }
             return username; 
@@ -445,17 +447,14 @@
             const badge = document.getElementById('chat-badge');
             
             if (chat.classList.contains('hidden')) {
-                // Open Chat
                 chat.classList.remove('hidden');
                 btn.style.display = 'none';
                 isChatOpen = true;
                 
-                // Clear notification
                 unreadChatCount = 0;
                 badge.innerText = '0';
                 badge.classList.add('hidden');
             } else {
-                // Close Chat
                 chat.classList.add('hidden');
                 btn.style.display = 'block';
                 isChatOpen = false;
@@ -551,8 +550,6 @@
                     document.getElementById('display-user').innerHTML = formatUserHTML(data.username);
                     document.getElementById('display-wins').innerText = data.wins;
                     document.getElementById('display-apm').innerText = data.bestAPM;
-                    // Don't auto open chat anymore, keep it closed so button shows
-                    // document.getElementById('chat-container').classList.remove('hidden'); 
                     document.getElementById('chat-open-btn').style.display = 'block';
                 } else {
                     alert(data.msg);
@@ -667,7 +664,6 @@
                 box.innerHTML += `<div class="chat-line"><span class="chat-user">${formatUserHTML(data.user)}:</span> ${data.text}</div>`;
                 box.scrollTop = box.scrollHeight;
                 
-                // --- CHAT NOTIFICATION LOGIC ---
                 if (!isChatOpen) {
                     unreadChatCount++;
                     const badge = document.getElementById('chat-badge');

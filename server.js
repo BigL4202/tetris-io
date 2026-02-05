@@ -12,326 +12,293 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// --- DATA STORAGE (Local File for now) ---
-const DATA_FILE = path.join(__dirname, 'accounts.json');
-let accounts = {}; 
+// --- CONSTANTS (Shared with Client) ---
+const COLS = 10;
+const ROWS = 20;
+const PIECES = [
+    [[1,1,1,1]],                // I
+    [[1,1],[1,1]],              // O
+    [[0,1,0],[1,1,1]],          // T
+    [[1,1,0],[0,1,1]],          // S
+    [[0,1,1],[1,1,0]],          // Z
+    [[1,0,0],[1,1,1]],          // J
+    [[0,0,1],[1,1,1]]           // L
+];
+// SRS Offsets (Simplified for Server)
+const OFFSETS_JLSTZ = [[[0,0],[0,0],[0,0],[0,0],[0,0]],[[0,0],[1,0],[1,-1],[0,2],[1,2]],[[0,0],[0,0],[0,0],[0,0],[0,0]],[[0,0],[-1,0],[-1,-1],[0,2],[-1,2]]];
+const OFFSETS_I = [[[0,0],[-1,0],[2,0],[-1,0],[2,0]],[[0,-1],[0,-1],[0,-1],[0,1],[0,-2]],[[-1,0],[0,0],[0,0],[0,1],[0,-2]],[[0,1],[0,1],[0,1],[0,-1],[0,2]]];
 
-function loadAccounts() {
-    try { if (fs.existsSync(DATA_FILE)) accounts = JSON.parse(fs.readFileSync(DATA_FILE)); } catch (err) { accounts = {}; }
-}
-function saveAccounts() {
-    try { fs.writeFileSync(DATA_FILE, JSON.stringify(accounts, null, 2)); } catch (err) {}
-}
-loadAccounts();
-
-// --- GAME STATE ---
-let ffaLobby = {
-    players: [],      
-    state: 'waiting', // waiting, countdown, playing
-    seed: 12345,
-    matchStats: [],
-    startTime: 0,
-    timer: null
-};
-
-// --- ROBUST LOBBY WATCHDOG (Runs every 1s) ---
-// This fixes the "Lockout" bug by forcing resets if the state gets stuck.
-setInterval(() => {
-    const now = Date.now();
-
-    // 1. AFK KICKER
-    if (ffaLobby.state === 'playing') {
-        // Kick players who haven't sent an update in 15 seconds
-        const afkPlayers = ffaLobby.players.filter(p => p.alive && (now - p.lastActivity > 15000));
-        afkPlayers.forEach(p => {
-            console.log(`[WATCHDOG] Kicking ${p.username} for AFK`);
-            io.to(p.id).emit('force_disconnect', 'You were kicked for inactivity.');
-            // Eliminate them properly so the game handles the death
-            handlePlayerDeath(p.id, { apm: 0, sent: 0 }, "AFK Timer");
-            // Then remove them from the lobby entirely
-            removePlayerFromLobby(p.id); 
-        });
+// --- SERVER GAME ENGINE ---
+class GameInstance {
+    constructor(id, username) {
+        this.id = id;
+        this.username = username;
+        this.grid = Array.from({length: ROWS}, () => Array(COLS).fill(0));
+        this.bag = [];
+        this.queue = [];
+        this.holdId = null;
+        this.canHold = true;
+        this.active = null;
+        this.score = 0;
+        this.combo = -1;
+        this.b2b = 0;
+        this.garbageQueue = 0;
+        this.alive = true;
+        this.lastUpdate = Date.now();
+        
+        // Populate queue
+        for(let i=0; i<4; i++) this.queue.push(this.pull());
+        this.spawn();
     }
 
-    // 2. ZOMBIE LOBBY CLEANER
-    // If state is playing/countdown but nobody is here, RESET IT.
-    if (ffaLobby.state !== 'waiting' && ffaLobby.players.length === 0) {
-        console.log("[WATCHDOG] Found empty active lobby. Forcing reset.");
-        forceLobbyReset();
-    }
-
-    // 3. STUCK GAME FIX
-    // If state is playing but only 1 person is alive/connected and they haven't won yet, trigger win check
-    if (ffaLobby.state === 'playing' && ffaLobby.players.length === 1) {
-        // Automatically give the win to the last person standing
-        checkWinCondition(); 
-    }
-
-}, 1000);
-
-
-// --- SOCKET CONNECTION ---
-io.on('connection', (socket) => {
-    
-    socket.on('login_attempt', (data) => {
-        const user = data.username.trim().substring(0, 12);
-        const pass = data.password.trim();
-        if (!user || !pass) return socket.emit('login_response', { success: false, msg: "Enter user & pass." });
-
-        if (!accounts[user]) {
-            accounts[user] = { password: pass, wins: 0, bestAPM: 0, bestCombo: 0, history: [] };
-            saveAccounts();
-        } else if (accounts[user].password !== pass) {
-            return socket.emit('login_response', { success: false, msg: "Incorrect Password!" });
+    pull() {
+        if (this.bag.length === 0) {
+            this.bag = [0,1,2,3,4,5,6];
+            for (let i = this.bag.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [this.bag[i], this.bag[j]] = [this.bag[j], this.bag[i]];
+            }
         }
+        return this.bag.pop();
+    }
 
-        socket.username = user;
-        socket.emit('login_response', { 
-            success: true, username: user, wins: accounts[user].wins, bestAPM: accounts[user].bestAPM || 0 
-        });
-        io.emit('leaderboard_update', getLeaderboards());
-    });
-
-    socket.on('join_ffa', async () => {
-        if (!socket.username) return;
-        
-        // Safety: Remove if they were already in
-        removePlayerFromLobby(socket.id);
-        
-        await socket.join('lobby_ffa');
-        
-        const pData = { 
-            id: socket.id, 
-            username: socket.username, 
-            alive: true, 
-            damageLog: [], 
-            lastActivity: Date.now() 
+    spawn() {
+        const id = this.queue.shift();
+        this.queue.push(this.pull());
+        this.active = {
+            id: id,
+            matrix: PIECES[id],
+            pos: {x: 3, y: -2}, // Spawn slightly higher
+            rotation: 0
         };
+        this.canHold = true;
         
-        // CRITICAL: If the game is "finished" (showing results), new players should wait, not spectate
-        if (ffaLobby.state === 'finished') {
-             // Treat 'finished' effectively as 'waiting' for new joiners
-             ffaLobby.state = 'waiting'; 
+        if (this.collide()) {
+            this.alive = false; // Top out immediately
         }
+    }
 
-        ffaLobby.players.push(pData);
-
-        if (ffaLobby.state === 'waiting') {
-            io.to('lobby_ffa').emit('lobby_update', { count: ffaLobby.players.length });
-            if (ffaLobby.players.length >= 2) tryStartGame();
-        } else {
-            // Late joiner = Spectator
-            pData.alive = false;
-            const livePlayers = ffaLobby.players.filter(p => p.alive).map(p => ({ id: p.id, username: p.username }));
-            socket.emit('ffa_spectate', { seed: ffaLobby.seed, players: livePlayers });
-        }
-    });
-
-    socket.on('leave_lobby', () => { removePlayerFromLobby(socket.id); });
-    socket.on('disconnect', () => { removePlayerFromLobby(socket.id); });
-
-    socket.on('update_board', (grid) => {
-        const p = ffaLobby.players.find(x => x.id === socket.id);
-        if (p) {
-            p.lastActivity = Date.now(); 
-            socket.to('lobby_ffa').emit('enemy_board_update', { id: socket.id, grid: grid });
-        }
-    });
-
-    socket.on('send_garbage', (data) => {
-        if (ffaLobby.state === 'playing') {
-            const sender = ffaLobby.players.find(p => p.id === socket.id);
-            if (!sender || !sender.alive) return;
-            
-            sender.lastActivity = Date.now(); 
-
-            const targets = ffaLobby.players.filter(p => p.alive && p.id !== socket.id);
-            if (targets.length > 0) {
-                let split = Math.floor(data.amount / targets.length);
-                if (data.amount >= 4 && split === 0) split = 1;
-                
-                if (split > 0) {
-                    targets.forEach(t => {
-                        t.damageLog.push({ attacker: sender.username, amount: split, time: Date.now() });
-                        io.to(t.id).emit('receive_garbage', split);
-                    });
+    collide(pos = this.active.pos, matrix = this.active.matrix) {
+        for(let y=0; y<matrix.length; y++) {
+            for(let x=0; x<matrix[y].length; x++) {
+                if(matrix[y][x]) {
+                    const gx = x + pos.x;
+                    const gy = y + pos.y;
+                    if (gx < 0 || gx >= COLS || gy >= ROWS) return true;
+                    if (gy >= 0 && this.grid[gy][gx]) return true;
                 }
             }
         }
-    });
+        return false;
+    }
 
-    socket.on('player_died', (stats) => {
-        handlePlayerDeath(socket.id, stats, "Gravity");
-    });
+    rotate(dir) {
+        if (!this.active) return;
+        const currentRot = this.active.rotation;
+        const newRot = (currentRot + dir + 4) % 4;
+        const newMatrix = this.active.matrix[0].map((_, i) => this.active.matrix.map(row => row[i]).reverse()); // Simple 90 deg rotation
+        
+        // Basic Wall Kick (Simplified)
+        const kicks = (this.active.id === 0 ? OFFSETS_I : OFFSETS_JLSTZ)[currentRot]; // Simplified lookup
+        if(!kicks) {
+             // Fallback to basic rotation if no kick table match
+             if(!this.collide(this.active.pos, newMatrix)) {
+                 this.active.matrix = newMatrix;
+                 this.active.rotation = newRot;
+             }
+             return;
+        }
 
-    socket.on('match_won', (stats) => {
-        if (ffaLobby.state === 'playing') {
-            recordMatchStat(socket.username, stats, true, Date.now() - ffaLobby.startTime);
-            finishGame(socket.username);
+        // Try kicks
+        for (let i = 0; i < kicks.length; i++) {
+            const offset = kicks[i];
+            const testPos = { x: this.active.pos.x + offset[0], y: this.active.pos.y - offset[1] };
+            if (!this.collide(testPos, newMatrix)) {
+                this.active.pos = testPos;
+                this.active.matrix = newMatrix;
+                this.active.rotation = newRot;
+                return;
+            }
+        }
+    }
+
+    move(dir) {
+        if (!this.active) return;
+        this.active.pos.x += dir;
+        if (this.collide()) this.active.pos.x -= dir;
+    }
+
+    softDrop() {
+        if (!this.active) return false;
+        this.active.pos.y++;
+        if (this.collide()) {
+            this.active.pos.y--;
+            this.lock();
+            return true; // Locked
+        }
+        return false;
+    }
+
+    hardDrop() {
+        if (!this.active) return;
+        while (!this.collide()) {
+            this.active.pos.y++;
+        }
+        this.active.pos.y--;
+        this.lock();
+    }
+
+    lock() {
+        if (!this.active) return;
+        // Commit to grid
+        this.active.matrix.forEach((row, y) => {
+            row.forEach((val, x) => {
+                if (val) {
+                    const gy = y + this.active.pos.y;
+                    if (gy >= 0 && gy < ROWS) {
+                        this.grid[gy][x + this.active.pos.x] = this.active.id + 1; // Store ID+1 (1-7)
+                    } else {
+                        this.alive = false; // Block locked above grid
+                    }
+                }
+            });
+        });
+
+        if (!this.alive) return;
+
+        // Clear Lines
+        let lines = 0;
+        for (let y = ROWS - 1; y >= 0; y--) {
+            if (this.grid[y].every(cell => cell !== 0)) {
+                this.grid.splice(y, 1);
+                this.grid.unshift(Array(COLS).fill(0));
+                lines++;
+                y++;
+            }
+        }
+
+        // Calculate Garbage / Combo
+        if (lines > 0) {
+            this.combo++;
+            let atk = (lines === 4) ? 4 : (lines - 1); // Basic: Quad=4, Triple=2, Double=1
+            if (this.combo > 0) atk += Math.floor(this.combo / 2);
+            
+            // Cancel incoming garbage
+            if (this.garbageQueue > 0) {
+                const cancelled = Math.min(this.garbageQueue, atk);
+                this.garbageQueue -= cancelled;
+                atk -= cancelled;
+            }
+            
+            // Send remaining attack
+            if (atk > 0) {
+                io.to('lobby_ffa').emit('garbage_sent', { senderId: this.id, amount: atk });
+            }
+        } else {
+            this.combo = -1;
+            // Receive Garbage if no line clear
+            if (this.garbageQueue > 0) {
+                const amount = Math.min(this.garbageQueue, 8); // Cap per frame
+                this.garbageQueue -= amount;
+                for(let i=0; i<amount; i++) {
+                    const hole = Math.floor(Math.random() * COLS);
+                    const row = Array(COLS).fill(8); // 8 = Garbage Color
+                    row[hole] = 0;
+                    this.grid.shift();
+                    this.grid.push(row);
+                }
+            }
+        }
+
+        this.spawn();
+    }
+
+    getState() {
+        return {
+            id: this.id,
+            grid: this.grid,
+            active: this.active,
+            hold: this.holdId,
+            queue: this.queue.slice(0, 3), // Show next 3
+            alive: this.alive
+        };
+    }
+}
+
+// --- SERVER LOOP (60 TPS) ---
+const TICK_RATE = 1000 / 60;
+let games = {}; // Map socket.id -> GameInstance
+
+setInterval(() => {
+    Object.values(games).forEach(game => {
+        if (game.alive) {
+            // Gravity (Simple: 1 row every 0.5s)
+            if (Date.now() - game.lastUpdate > 500) {
+                game.softDrop();
+                game.lastUpdate = Date.now();
+            }
         }
     });
     
-    socket.on('send_chat', (msg) => {
-        const cleanMsg = msg.replace(/</g, "&lt;").substring(0, 50);
-        const name = socket.username || "Anon";
-        io.emit('receive_chat', { user: name, text: cleanMsg });
+    // Broadcast State to Everyone
+    const gameState = Object.values(games).map(g => g.getState());
+    io.to('lobby_ffa').emit('game_update', gameState);
+
+}, TICK_RATE);
+
+
+// --- SOCKET HANDLERS ---
+io.on('connection', (socket) => {
+    console.log('User connected:', socket.id);
+
+    socket.on('join_game', (username) => {
+        socket.join('lobby_ffa');
+        games[socket.id] = new GameInstance(socket.id, username || "Guest");
     });
-    
-    socket.on('request_all_stats', () => {
-        socket.emit('receive_all_stats', accounts);
+
+    // INPUTS (Client sends intent, Server executes)
+    socket.on('input', (action) => {
+        const game = games[socket.id];
+        if (!game || !game.alive) return;
+
+        switch(action) {
+            case 'left': game.move(-1); break;
+            case 'right': game.move(1); break;
+            case 'rotate': game.rotate(1); break;
+            case 'soft': game.softDrop(); break;
+            case 'hard': game.hardDrop(); break;
+            case 'hold': 
+                if (game.canHold) {
+                    const cur = game.active.id;
+                    if (game.holdId === null) {
+                        game.holdId = cur;
+                        game.spawn();
+                    } else {
+                        const temp = game.holdId;
+                        game.holdId = cur;
+                        game.active.id = temp;
+                        game.active.matrix = PIECES[temp];
+                        game.active.pos = {x:3, y:-2};
+                    }
+                    game.canHold = false;
+                }
+                break;
+        }
+    });
+
+    // Receive Garbage from other players (Internal logic)
+    socket.on('garbage_sent', (data) => {
+        // Distribute to others
+        Object.values(games).forEach(g => {
+            if (g.id !== socket.id && g.alive) {
+                g.garbageQueue += data.amount;
+            }
+        });
+    });
+
+    socket.on('disconnect', () => {
+        delete games[socket.id];
     });
 });
 
-// --- CORE LOGIC ---
-
-function removePlayerFromLobby(socketId) {
-    const idx = ffaLobby.players.findIndex(p => p.id === socketId);
-    if (idx !== -1) {
-        const p = ffaLobby.players[idx];
-        ffaLobby.players.splice(idx, 1);
-        
-        const ioSocket = io.sockets.sockets.get(socketId);
-        if(ioSocket) ioSocket.leave('lobby_ffa');
-
-        io.to('lobby_ffa').emit('lobby_update', { count: ffaLobby.players.length });
-
-        // If the game was active and they were alive, they "die" by disconnecting
-        if (ffaLobby.state === 'playing' && p.alive) {
-            io.to('lobby_ffa').emit('elimination', { username: p.username, killer: "Disconnect" });
-            checkWinCondition();
-        }
-
-        // If not enough players to start/continue, reset
-        if (ffaLobby.players.length < 2) {
-            if (ffaLobby.state === 'countdown') {
-                clearTimeout(ffaLobby.timer);
-                forceLobbyReset();
-            } else if (ffaLobby.state === 'playing' && ffaLobby.players.length === 0) {
-                forceLobbyReset();
-            }
-        }
-    }
-}
-
-function forceLobbyReset() {
-    ffaLobby.state = 'waiting';
-    ffaLobby.matchStats = [];
-    clearTimeout(ffaLobby.timer);
-    io.to('lobby_ffa').emit('lobby_reset');
-    // If people are somehow waiting, try to restart
-    if (ffaLobby.players.length >= 2) tryStartGame();
-}
-
-function handlePlayerDeath(socketId, stats, defaultKiller) {
-    const p = ffaLobby.players.find(x => x.id === socketId);
-    if (p && ffaLobby.state === 'playing' && p.alive) {
-        p.alive = false;
-        let killer = defaultKiller;
-        const recent = p.damageLog.filter(l => Date.now() - l.time < 15000); 
-        if (recent.length > 0) {
-            const map = {}; recent.forEach(l => map[l.attacker] = (map[l.attacker] || 0) + l.amount);
-            killer = Object.keys(map).reduce((a, b) => map[a] > map[b] ? a : b);
-        }
-        recordMatchStat(p.username, stats, false, Date.now() - ffaLobby.startTime);
-        io.to('lobby_ffa').emit('elimination', { username: p.username, killer: killer });
-        checkWinCondition();
-    }
-}
-
-function tryStartGame() {
-    if (ffaLobby.state === 'waiting' && ffaLobby.players.length >= 2) {
-        ffaLobby.state = 'countdown';
-        ffaLobby.seed = Math.floor(Math.random() * 1000000);
-        ffaLobby.matchStats = [];
-        
-        // Revive everyone
-        ffaLobby.players.forEach(p => { 
-            p.alive = true; p.damageLog = []; p.lastActivity = Date.now(); 
-        });
-
-        // TIME SYNC FIX: Send the TARGET start time, not just duration
-        const targetStartTime = Date.now() + 3000; 
-        io.to('lobby_ffa').emit('start_countdown', { targetTime: targetStartTime });
-
-        ffaLobby.timer = setTimeout(() => {
-            ffaLobby.state = 'playing';
-            ffaLobby.startTime = Date.now();
-            io.to('lobby_ffa').emit('match_start', {
-                mode: 'ffa',
-                seed: ffaLobby.seed,
-                players: ffaLobby.players.map(p => ({ id: p.id, username: p.username }))
-            });
-        }, 3000);
-    }
-}
-
-function checkWinCondition() {
-    const survivors = ffaLobby.players.filter(p => p.alive);
-    if (survivors.length <= 1) {
-        // Game Over
-        if (survivors.length === 1) {
-            io.to(survivors[0].id).emit('request_win_stats');
-        } else {
-            // Everyone died (or 0 players left)
-            finishGame(null);
-        }
-    }
-}
-
-function recordMatchStat(username, stats, isWinner, sTime) {
-    if (ffaLobby.matchStats.find(s => s.username === username)) return;
-    ffaLobby.matchStats.push({ username, isWinner, ...stats, survivalTime: sTime });
-}
-
-function finishGame(winnerName) {
-    // Prevent double finishing
-    if (ffaLobby.state === 'finished') return; 
-    
-    // Slight delay to allow final stat packet to arrive
-    setTimeout(() => {
-        ffaLobby.state = 'finished'; // Lock state immediately
-
-        const winnerObj = ffaLobby.matchStats.find(s => s.isWinner);
-        const losers = ffaLobby.matchStats.filter(s => !s.isWinner).sort((a, b) => b.survivalTime - a.survivalTime);
-        const results = [];
-        const fmt = (ms) => `${Math.floor(ms/60000)}m ${Math.floor((ms%60000)/1000)}s`;
-
-        if (winnerObj) results.push({ ...winnerObj, place: 1, durationStr: fmt(winnerObj.survivalTime) });
-        losers.forEach((l, i) => results.push({ ...l, place: (winnerObj ? 2 : 1) + i, durationStr: fmt(l.survivalTime) }));
-
-        // Save Data
-        results.forEach(res => {
-            if (accounts[res.username]) {
-                if (res.place === 1) accounts[res.username].wins++;
-                if ((res.maxCombo||0) > (accounts[res.username].bestCombo||0)) accounts[res.username].bestCombo = res.maxCombo;
-                if ((res.apm||0) > (accounts[res.username].bestAPM||0)) accounts[res.username].bestAPM = res.apm;
-                if (!accounts[res.username].history) accounts[res.username].history = [];
-                accounts[res.username].history.push({ date: new Date().toISOString(), ...res });
-            }
-        });
-        saveAccounts();
-
-        if (winnerName && accounts[winnerName]) {
-            const sock = ffaLobby.players.find(p => p.username === winnerName);
-            if (sock && io.sockets.sockets.get(sock.id)) io.to(sock.id).emit('update_my_wins', accounts[winnerName].wins);
-        }
-
-        io.emit('leaderboard_update', getLeaderboards());
-        io.to('lobby_ffa').emit('match_summary', results);
-
-        // Reset Loop
-        setTimeout(() => {
-            forceLobbyReset();
-        }, 5000);
-    }, 500);
-}
-
-function getLeaderboards() {
-    const all = Object.entries(accounts);
-    return {
-        wins: all.map(([n, d]) => ({ name: n, val: d.wins })).sort((a, b) => b.val - a.val).slice(0, 5),
-        combos: all.map(([n, d]) => ({ name: n, val: d.bestCombo || 0 })).filter(u => u.val > 0).sort((a, b) => b.val - a.val).slice(0, 5)
-    };
-}
-
-http.listen(3000, () => console.log('SERVER RUNNING ON PORT 3000'));
+http.listen(3000, () => console.log('SERVER RUNNING - AUTHORITATIVE MODE'));

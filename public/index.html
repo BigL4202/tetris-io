@@ -396,29 +396,57 @@
         </div>
         <div id="ffa-grid"></div> 
     </div>
-    <script>
+<script>
         // --- CONFIGURATION ---
-        const COLS=4, ROWS=30, B_SIZE=30; 
-        const PIECES=[[[1,1,1,1]],[[1,1],[1,1]],[[0,1,0],[1,1,1]],[[1,1,0],[0,1,1]],[[0,1,1],[1,1,0]],[[1,0,0],[1,1,1]],[[0,0,1],[1,1,1]]];
-        const COLORS=['#31C7EF','#F7D308','#FF69B4','#EF2029','#42B642','#9D00FF','#EF7921'];
+        const COLS = 4;
+        const ROWS = 30;
+        const B_SIZE = 30; 
         
+        const PIECES = [
+            [[1,1,1,1]],                // I
+            [[1,1],[1,1]],              // O
+            [[0,1,0],[1,1,1]],          // T
+            [[1,1,0],[0,1,1]],          // S
+            [[0,1,1],[1,1,0]],          // Z
+            [[1,0,0],[1,1,1]],          // J
+            [[0,0,1],[1,1,1]]           // L
+        ];
+        
+        const COLORS = [
+            '#31C7EF', // I - Cyan
+            '#F7D308', // O - Yellow
+            '#FF69B4', // T - Pink
+            '#EF2029', // S - Red
+            '#42B642', // Z - Green
+            '#9D00FF', // J - Purple
+            '#EF7921'  // L - Orange
+        ];
+        
+        // SRS Rotation Offsets
         const OFFSETS_JLSTZ = [
             [[0,0], [0,0], [0,0], [0,0], [0,0]], [[0,0], [1,0], [1,-1], [0,2], [1,2]],
             [[0,0], [0,0], [0,0], [0,0], [0,0]], [[0,0], [-1,0], [-1,-1], [0,2], [-1,2]],
             [[0,0], [0,0], [0,0], [0,0], [0,0]], [[0,0], [1,0], [1,1], [0,-2], [1,-2]],
             [[0,0], [0,0], [0,0], [0,0], [0,0]], [[0,0], [-1,0], [-1,1], [0,-2], [-1,-2]]
         ];
+        
         const OFFSETS_I = [
             [[0,0], [-1,0], [2,0], [-1,0], [2,0]], [[0,-1], [0,-1], [0,-1], [0,1], [0,-2]],
             [[-1,0], [0,0], [0,0], [0,1], [0,-2]], [[0,1], [0,1], [0,1], [0,-1], [0,2]],
             [[-1,1], [2,1], [-1,1], [2,0], [-1,0]], [[0,1], [0,1], [0,1], [0,-1], [0,2]],
             [[0,1], [0,1], [0,1], [0,-1], [0,2]], [[0,-1], [0,-1], [0,-1], [0,1], [0,-2]]
         ];
+        
         const KICK_INDEX = { "0_1":0, "1_0":1, "1_2":2, "2_1":3, "2_3":4, "3_2":5, "3_0":6, "0_3":7 };
 
         // --- GLOBAL STATE ---
-        let socket=null, gameActive=false, inputLocked=false, isSpectator=false;
-        let gameMode='zen', startTime=0, apmTimer=null;
+        let socket = null;
+        let gameActive = false;
+        let inputLocked = false;
+        let isSpectator = false;
+        let gameMode = 'zen';
+        let startTime = 0;
+        let apmTimer = null;
         let statsCache = {}; 
         
         // Chat Notification State
@@ -631,6 +659,7 @@
                 });
             });
 
+            // --- SYNC FIX: USES SERVER TIMESTAMP ---
             socket.on('start_countdown', data => {
                 if(gameMode === 'zen' || gameMode === 'apm_test') return;
                 gameMode = 'ffa';
@@ -640,10 +669,18 @@
                 const ov = document.getElementById('overlay-cnt');
                 const tx = document.getElementById('cnt-txt');
                 ov.classList.remove('hidden');
-                let n = data.duration;
-                tx.innerText = n;
+                
+                // Client calculates remainder: Target Time - Current Time
                 inputLocked = true;
-                const iv = setInterval(()=>{ n--; if(n>0) tx.innerText = n; else { clearInterval(iv); ov.classList.add('hidden'); } }, 1000);
+                const iv = setInterval(() => {
+                    const timeLeft = Math.ceil((data.targetTime - Date.now()) / 1000);
+                    if(timeLeft > 0) {
+                        tx.innerText = timeLeft;
+                    } else {
+                        clearInterval(iv);
+                        ov.classList.add('hidden');
+                    }
+                }, 100); // Check faster (every 100ms) to snap 0 immediately
             });
 
             socket.on('match_start', data => {
@@ -652,6 +689,7 @@
                 gameMode = data.mode;
                 isSpectator = false;
                 document.getElementById('p1-root').style.opacity = '1';
+                document.getElementById('overlay-cnt').classList.add('hidden'); // Ensure hidden
                 setupOnlineGame(data.seed, data.players);
             });
 
@@ -805,7 +843,13 @@
         }
 
         // --- GAME ENGINE ---
-        class SeededRNG { constructor(s){this.s=s;} next(){this.s=(this.s*9301+49297)%233280;return this.s/233280;} }
+        class SeededRNG { 
+            constructor(s){ this.s = s; } 
+            next(){ 
+                this.s = (this.s * 9301 + 49297) % 233280;
+                return this.s / 233280;
+            } 
+        }
         
         class Player {
             constructor(){
@@ -825,12 +869,22 @@
 
                 this.rotation = 0;
                 this.grid=Array.from({length:ROWS},()=>Array(COLS).fill(0));
-                this.bag=[]; this.queue=[]; 
-                this.holdId=null; this.canHold=true;
+                this.bag=[]; 
+                this.queue=[]; 
+                this.holdId=null; 
+                this.canHold=true;
                 
-                this.pendingG=0; this.combo=-1; this.maxCombo=0; this.b2b=0; 
-                this.dropCounter=0; this.lockTimer=0; this.dasTimer=0; this.arrTimer=0;
-                this.piecesPlaced=0; this.linesSentTotal=0; this.linesRecvTotal=0;
+                this.pendingG=0; 
+                this.combo=-1; 
+                this.maxCombo=0; 
+                this.b2b=0; 
+                this.dropCounter=0; 
+                this.lockTimer=0; 
+                this.dasTimer=0; 
+                this.arrTimer=0;
+                this.piecesPlaced=0; 
+                this.linesSentTotal=0; 
+                this.linesRecvTotal=0;
                 this.rng=new SeededRNG(1);
                 this.startTime = Date.now();
             }
@@ -840,34 +894,56 @@
                 return {
                     apm: (sec>0 ? Math.floor((this.linesSentTotal/sec)*60) : 0),
                     pps: (sec>0 ? (this.piecesPlaced/sec).toFixed(2) : "0.00"),
-                    sent: this.linesSentTotal, recv: this.linesRecvTotal, maxCombo: this.maxCombo 
+                    sent: this.linesSentTotal, 
+                    recv: this.linesRecvTotal, 
+                    maxCombo: this.maxCombo 
                 };
             }
 
-            initRNG(s){this.rng=new SeededRNG(s);}
+            initRNG(s){ this.rng = new SeededRNG(s); }
+            
             reset(){ 
                 this.grid.forEach(r=>r.fill(0)); 
-                this.bag=[]; this.queue=[]; 
-                this.piecesPlaced=0; this.linesSentTotal=0; this.linesRecvTotal=0; this.pendingG=0;
+                this.bag=[]; 
+                this.queue=[]; 
+                this.piecesPlaced=0; 
+                this.linesSentTotal=0; 
+                this.linesRecvTotal=0; 
+                this.pendingG=0;
                 this.startTime = Date.now();
-                this.holdId = null; this.canHold = true; 
-                this.maxCombo = 0; this.rotation = 0;
+                this.holdId = null; 
+                this.canHold = true; 
+                this.maxCombo = 0; 
+                this.rotation = 0;
                 this.drawSide(this.hCtx, [this.holdId]);
-                for(let i=0;i<4;i++)this.queue.push(this.pull()); 
+                for(let i=0;i<4;i++) this.queue.push(this.pull()); 
                 this.spawn(); 
             }
-            pull(){ if(!this.bag.length){this.bag=[0,1,2,3,4,5,6]; for(let i=6;i>0;i--){const j=Math.floor(this.rng.next()*(i+1));[this.bag[i],this.bag[j]]=[this.bag[j],this.bag[i]];}} return this.bag.pop(); }
+            
+            pull(){ 
+                if(!this.bag.length){
+                    this.bag=[0,1,2,3,4,5,6]; 
+                    for(let i=6;i>0;i--){
+                        const j=Math.floor(this.rng.next()*(i+1));
+                        [this.bag[i],this.bag[j]]=[this.bag[j],this.bag[i]];
+                    }
+                } 
+                return this.bag.pop(); 
+            }
             
             spawn(id=this.queue.shift()){
                 this.queue.push(this.pull());
                 this.rotation = 0;
-                this.active={pos:{x:0, y:-1}, matrix:PIECES[id], id:id, color:COLORS[id]};
+                this.active = { pos:{x:0, y:-1}, matrix:PIECES[id], id:id, color:COLORS[id] };
                 
-                this.lastMoveRotate=false;
+                this.lastMoveRotate = false;
                 this.lockTimer = 0;
                 
-                if(this.collide()){}
-                this.drawSide(this.nCtx,this.queue); this.sendBoard();
+                if(this.collide()){
+                    // Top out check could go here
+                }
+                this.drawSide(this.nCtx, this.queue); 
+                this.sendBoard();
             }
 
             collide(m=this.active.matrix, p=this.active.pos) {
@@ -907,6 +983,7 @@
                     }
                 }
 
+                // Basic Safety Kicks
                 const safetyKicks = [[-1,0],[1,0],[-2,0],[2,0],[-3,0]];
                 for(let k of safetyKicks) {
                     this.active.pos.x = initialPos.x + k[0];
@@ -928,19 +1005,41 @@
             }
 
             move(d){ 
-                this.active.pos.x+=d; 
-                if(this.collide()) this.active.pos.x-=d; 
-                else { this.lastMoveRotate=false; if(this.isGrounded()) this.lockTimer=0; this.sendBoard(); } 
+                this.active.pos.x += d; 
+                if(this.collide()) this.active.pos.x -= d; 
+                else { 
+                    this.lastMoveRotate = false; 
+                    if(this.isGrounded()) this.lockTimer=0; 
+                    this.sendBoard(); 
+                } 
             }
-            isGrounded() { this.active.pos.y++; const hit=this.collide(); this.active.pos.y--; return hit; }
-            hardDrop(){ while(!this.collide())this.active.pos.y++; this.active.pos.y--; this.lock(); }
+            
+            isGrounded() { 
+                this.active.pos.y++; 
+                const hit = this.collide(); 
+                this.active.pos.y--; 
+                return hit; 
+            }
+            
+            hardDrop(){ 
+                while(!this.collide()) this.active.pos.y++; 
+                this.active.pos.y--; 
+                this.lock(); 
+            }
             
             hold(slot=1){ 
-                const c=this.active.id; 
+                const c = this.active.id; 
                 if (slot === 1) {
                     if(!this.canHold) return;
-                    if(this.holdId===null){this.holdId=c;this.spawn();} else{const t=this.holdId;this.holdId=c;this.spawn(t);} 
-                    this.canHold=false; 
+                    if(this.holdId === null){
+                        this.holdId = c;
+                        this.spawn();
+                    } else {
+                        const t = this.holdId;
+                        this.holdId = c;
+                        this.spawn(t);
+                    } 
+                    this.canHold = false; 
                 } 
                 this.drawSide(this.hCtx, [this.holdId]); 
             }
@@ -950,9 +1049,9 @@
                 
                 this.active.matrix.forEach((r,y)=>r.forEach((v,x)=>{ 
                     if(v) { 
-                        const gy=y+this.active.pos.y; 
-                        if(gy>=0) {
-                            this.grid[gy][x+this.active.pos.x]=this.active.color; 
+                        const gy = y + this.active.pos.y; 
+                        if(gy >= 0) {
+                            this.grid[gy][x+this.active.pos.x] = this.active.color; 
                             if (gy >= 4) entirelyInRed = false;
                         }
                     } 
@@ -963,7 +1062,8 @@
                 if (entirelyInRed && linesCleared === 0) {
                      if(gameMode !== 'zen' && gameMode !== 'apm_test' && socket) {
                         socket.emit('player_died', this.getStats()); 
-                        isSpectator=true; document.getElementById('p1-root').style.opacity='0.3';
+                        isSpectator = true; 
+                        document.getElementById('p1-root').style.opacity='0.3';
                         return;
                     } else {
                         this.reset();
@@ -971,31 +1071,76 @@
                     }
                 }
 
-                this.canHold=true; this.spawn();
+                this.canHold = true; 
+                this.spawn();
             }
 
             sweep(){
-                let lines=0, isPC=true;
-                for(let y=ROWS-1;y>=0;y--){ if(this.grid[y].every(v=>v!==0)){this.grid.splice(y,1);this.grid.unshift(Array(COLS).fill(0));lines++;y++;} else if(this.grid[y].some(v=>v!==0)) isPC=false; }
+                let lines = 0;
+                let isPC = true;
                 
-                if(lines>0){
+                for(let y=ROWS-1; y>=0; y--){ 
+                    if(this.grid[y].every(v => v !== 0)){
+                        this.grid.splice(y,1);
+                        this.grid.unshift(Array(COLS).fill(0));
+                        lines++;
+                        y++;
+                    } else if(this.grid[y].some(v => v !== 0)) {
+                        isPC = false;
+                    } 
+                }
+                
+                if(lines > 0){
                     this.combo++;
                     if(this.combo > this.maxCombo) this.maxCombo = this.combo;
-                    let atk=0, txt="";
-                    txt=(lines==1)?"SINGLE":(lines==2)?"DOUBLE":(lines==3)?"TRIPLE":"QUAD"; atk=(lines==4)?4:(lines-1); 
+                    
+                    let atk = 0;
+                    let txt = "";
+                    txt = (lines==1)?"SINGLE":(lines==2)?"DOUBLE":(lines==3)?"TRIPLE":"QUAD"; 
+                    atk = (lines==4)?4:(lines-1); 
+                    
                     if(isPC){ txt="ALL CLEAR"; atk+=10; }
                     this.showText(this.popAct, txt);
-                    if(lines==4){ this.b2b++; if(this.b2b>1){atk+=1; this.showText(this.popB2B, "B2B x"+(this.b2b-1));} } else this.b2b=0;
-                    if(this.combo>0){ atk+=Math.floor((this.combo-1)/2); this.showText(this.popCmbo, this.combo+" COMBO"); }
+                    
+                    if(lines==4){ 
+                        this.b2b++; 
+                        if(this.b2b > 1){
+                            atk+=1; 
+                            this.showText(this.popB2B, "B2B x"+(this.b2b-1));
+                        } 
+                    } else {
+                        this.b2b = 0;
+                    }
+                    
+                    if(this.combo > 0){ 
+                        atk += Math.floor((this.combo-1)/2); 
+                        this.showText(this.popCmbo, this.combo+" COMBO"); 
+                    }
+                    
                     if(atk > 0) this.showText(this.popSent, `+${atk}`);
-                    if(this.pendingG>0){ let c=Math.min(this.pendingG,atk); this.pendingG-=c; atk-=c; }
-                    this.linesSentTotal+=atk; 
-                    if(atk>0 && (gameMode === 'ffa')){ if(socket && !isSpectator) socket.emit('send_garbage', {mode:gameMode, amount:atk}); }
+                    
+                    if(this.pendingG > 0){ 
+                        let c = Math.min(this.pendingG, atk); 
+                        this.pendingG -= c; 
+                        atk -= c; 
+                    }
+                    
+                    this.linesSentTotal += atk; 
+                    
+                    if(atk > 0 && (gameMode === 'ffa')){ 
+                        if(socket && !isSpectator) socket.emit('send_garbage', {mode:gameMode, amount:atk}); 
+                    }
                 } else {
-                    this.combo=-1;
-                    while(this.pendingG>0){ this.pendingG--; const r=Array(COLS).fill('#555'); r[Math.floor(Math.random()*COLS)]=0; this.grid.shift(); this.grid.push(r); }
+                    this.combo = -1;
+                    while(this.pendingG > 0){ 
+                        this.pendingG--; 
+                        const r = Array(COLS).fill('#555'); 
+                        r[Math.floor(Math.random()*COLS)] = 0; 
+                        this.grid.shift(); 
+                        this.grid.push(r); 
+                    }
                 }
-                this.gBar.style.height=(this.pendingG*30)+'px';
+                this.gBar.style.height = (this.pendingG * 30) + 'px';
                 this.updateStats();
                 return lines;
             }
@@ -1013,16 +1158,20 @@
                 this.elRecv.innerText = this.linesRecvTotal;
                 this.elPPS.innerText = (sec>0 ? (this.piecesPlaced/sec).toFixed(2) : "0.00");
                 this.elAPM.innerText = (sec>0 ? Math.floor((this.linesSentTotal/sec)*60) : 0);
+                
                 let displaySec = sec;
                 if(gameMode === 'apm_test') displaySec = 60 - sec; 
                 if(displaySec < 0) displaySec = 0;
-                const m=Math.floor(displaySec/60).toString().padStart(2,'0');
-                const s=Math.floor(displaySec%60).toString().padStart(2,'0');
+                
+                const m = Math.floor(displaySec/60).toString().padStart(2,'0');
+                const s = Math.floor(displaySec%60).toString().padStart(2,'0');
                 this.elTime.innerText = `${m}:${s}`;
             }
 
             drawSide(ctx, ids){
-                ctx.fillStyle = '#000'; ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                ctx.fillStyle = '#000'; 
+                ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                
                 ids.forEach((id, i) => {
                     if (id !== null) {
                         ctx.fillStyle = COLORS[id];
@@ -1031,6 +1180,7 @@
                         const ph = shape.length * 20;
                         const ox = (ctx.canvas.width - pw) / 2;
                         const oy = i * 80 + (80-ph)/2;
+                        
                         shape.forEach((row, y) => {
                             row.forEach((value, x) => {
                                 if (value) ctx.fillRect(ox + x * 20, oy + y * 20, 19, 19);
@@ -1040,8 +1190,23 @@
                 });
             }
             
-            sendBoard(){ if(socket && !isSpectator){ const d=JSON.parse(JSON.stringify(this.grid)); this.active.matrix.forEach((r,y)=>r.forEach((v,x)=>{if(v&&d[y+this.active.pos.y])d[y+this.active.pos.y][x+this.active.pos.x]=this.active.color;})); socket.emit('update_board',d); } }
-            showText(el, msg){ el.innerText=msg; el.style.opacity=1; setTimeout(()=>el.style.opacity=0, 1000); }
+            sendBoard(){ 
+                if(socket && !isSpectator){ 
+                    const d = JSON.parse(JSON.stringify(this.grid)); 
+                    this.active.matrix.forEach((r,y)=>r.forEach((v,x)=>{
+                        if(v && d[y+this.active.pos.y]) {
+                            d[y+this.active.pos.y][x+this.active.pos.x] = this.active.color;
+                        }
+                    })); 
+                    socket.emit('update_board', d); 
+                } 
+            }
+            
+            showText(el, msg){ 
+                el.innerText = msg; 
+                el.style.opacity = 1; 
+                setTimeout(() => el.style.opacity = 0, 1000); 
+            }
             
             update(dt){
                 let dropSpeed = 700;
@@ -1051,20 +1216,30 @@
                     dropSpeed = Math.max(100, 700 - reduction); 
                 }
 
-                this.dropCounter+=dt;
+                this.dropCounter += dt;
                 if(this.dropCounter > dropSpeed) {
                     this.active.pos.y++;
-                    if(this.collide()) { this.active.pos.y--; } else { this.lockTimer = 0; this.lastMoveRotate = false; }
+                    if(this.collide()) { 
+                        this.active.pos.y--; 
+                    } else { 
+                        this.lockTimer = 0; 
+                        this.lastMoveRotate = false; 
+                    }
                     this.dropCounter = 0;
                 }
-                if(this.isGrounded()) { this.lockTimer += dt; if(this.lockTimer > 500) this.lock(); }
+                
+                if(this.isGrounded()) { 
+                    this.lockTimer += dt; 
+                    if(this.lockTimer > 500) this.lock(); 
+                }
                 this.sendBoard();
             }
 
             draw(){
-                this.ctx.fillStyle='#000'; this.ctx.fillRect(0,0,120,900);
+                this.ctx.fillStyle='#000'; 
+                this.ctx.fillRect(0,0,120,900);
                 
-                // Red Zone Indicator
+                // Red Zone
                 this.ctx.fillStyle = 'rgba(255, 0, 0, 0.2)';
                 this.ctx.fillRect(0, 0, 120, 120); 
                 
@@ -1076,20 +1251,47 @@
                 for (let y = 4; y < ROWS; y++) { this.ctx.moveTo(0, y * B_SIZE); this.ctx.lineTo(COLS * B_SIZE, y * B_SIZE); }
                 this.ctx.stroke();
 
-                this.grid.forEach((r,y)=>r.forEach((v,x)=>{if(v){this.ctx.fillStyle=v; this.ctx.fillRect(x*B_SIZE,y*B_SIZE,B_SIZE-1,B_SIZE-1);}}));
+                // Draw Grid
+                this.grid.forEach((r,y)=>r.forEach((v,x)=>{
+                    if(v){
+                        this.ctx.fillStyle = v; 
+                        this.ctx.fillRect(x*B_SIZE, y*B_SIZE, B_SIZE-1, B_SIZE-1);
+                    }
+                }));
+                
+                // Draw Active Piece & Ghost
                 if(this.active && !isSpectator){
-                    let g={...this.active.pos}; while(!this.collide(this.active.matrix,g))g.y++; g.y--;
-                    this.ctx.fillStyle='rgba(255,255,255,0.15)'; this.active.matrix.forEach((r,y)=>r.forEach((v,x)=>{if(v)this.ctx.fillRect((g.x+x)*B_SIZE,(g.y+y)*B_SIZE,B_SIZE-1,B_SIZE-1);}));
-                    this.ctx.fillStyle=this.active.color; this.active.matrix.forEach((r,y)=>r.forEach((v,x)=>{if(v)this.ctx.fillRect((this.active.pos.x+x)*B_SIZE,(this.active.pos.y+y)*B_SIZE,B_SIZE-1,B_SIZE-1);}));
+                    // Ghost
+                    let g = {...this.active.pos}; 
+                    while(!this.collide(this.active.matrix, g)) g.y++; 
+                    g.y--;
+                    
+                    this.ctx.fillStyle = 'rgba(255,255,255,0.15)'; 
+                    this.active.matrix.forEach((r,y)=>r.forEach((v,x)=>{
+                        if(v) this.ctx.fillRect((g.x+x)*B_SIZE, (g.y+y)*B_SIZE, B_SIZE-1, B_SIZE-1);
+                    }));
+                    
+                    // Actual Piece
+                    this.ctx.fillStyle = this.active.color; 
+                    this.active.matrix.forEach((r,y)=>r.forEach((v,x)=>{
+                        if(v) this.ctx.fillRect((this.active.pos.x+x)*B_SIZE, (this.active.pos.y+y)*B_SIZE, B_SIZE-1, B_SIZE-1);
+                    }));
                 }
             }
         }
 
         const p1 = new Player();
         const keys = new Set();
-        const ctrl = {left:'ArrowLeft',right:'ArrowRight',rotate:'ArrowUp',soft:'ArrowDown',hard:'Space',hold:'ShiftLeft'};
+        const ctrl = {
+            left:'ArrowLeft',
+            right:'ArrowRight',
+            rotate:'ArrowUp',
+            soft:'ArrowDown',
+            hard:'Space',
+            hold:'ShiftLeft'
+        };
         
-        window.addEventListener('keydown', e=>{
+        window.addEventListener('keydown', e => {
             if(gameMode === 'zen' || gameMode === 'apm_test') {
                 if(document.activeElement.tagName !== 'INPUT' && e.code === 'KeyR') {
                     if(gameMode === 'zen') startZen();
@@ -1097,30 +1299,56 @@
                     return;
                 }
             }
+            
             if(!inputLocked && gameActive && !isSpectator){
                 if(["Space","ArrowUp","ArrowDown"].includes(e.code)) e.preventDefault();
+                
                 if(!keys.has(e.code)){
                     keys.add(e.code);
-                    if(e.code==ctrl.rotate)p1.rotate();
-                    if(e.code==ctrl.hold)p1.hold(1);
-                    if(e.code==ctrl.hard)p1.hardDrop();
-                    if(e.code==ctrl.left || e.code==ctrl.right){ p1.dasTimer=0; p1.arrTimer=0; p1.move(e.code==ctrl.left?-1:1); }
+                    if(e.code == ctrl.rotate) p1.rotate();
+                    if(e.code == ctrl.hold) p1.hold(1);
+                    if(e.code == ctrl.hard) p1.hardDrop();
+                    if(e.code == ctrl.left || e.code == ctrl.right){ 
+                        p1.dasTimer = 0; 
+                        p1.arrTimer = 0; 
+                        p1.move(e.code == ctrl.left ? -1 : 1); 
+                    }
                 }
             }
         });
-        window.addEventListener('keyup', e=>keys.delete(e.code));
 
-        let lastT=0;
+        window.addEventListener('keyup', e => keys.delete(e.code));
+
+        let lastT = 0;
         function loop(t=0){
-            const dt=t-lastT; lastT=t;
+            const dt = t - lastT; 
+            lastT = t;
+            
             if(gameActive) {
                 if(!isSpectator && !inputLocked){
-                    if(keys.has(ctrl.soft)){ p1.active.pos.y++; if(p1.collide())p1.active.pos.y--; else { p1.lastMoveRotate=false; p1.lockTimer=0; } }
-                    if(keys.has(ctrl.left)||keys.has(ctrl.right)){
-                        const d=keys.has(ctrl.left)?-1:1;
-                        p1.dasTimer+=dt;
-                        if(p1.dasTimer>130){ p1.arrTimer+=dt; if(p1.arrTimer>0){ p1.move(d); p1.arrTimer=0; } }
+                    // Soft Drop
+                    if(keys.has(ctrl.soft)){ 
+                        p1.active.pos.y++; 
+                        if(p1.collide()) p1.active.pos.y--; 
+                        else { 
+                            p1.lastMoveRotate = false; 
+                            p1.lockTimer = 0; 
+                        } 
                     }
+                    
+                    // DAS / ARR Movement
+                    if(keys.has(ctrl.left) || keys.has(ctrl.right)){
+                        const d = keys.has(ctrl.left) ? -1 : 1;
+                        p1.dasTimer += dt;
+                        if(p1.dasTimer > 130){ 
+                            p1.arrTimer += dt; 
+                            if(p1.arrTimer > 0){ 
+                                p1.move(d); 
+                                p1.arrTimer = 0; 
+                            } 
+                        }
+                    }
+                    
                     p1.update(dt);
                     p1.updateStats();
                 }
@@ -1129,5 +1357,3 @@
             requestAnimationFrame(loop);
         }
     </script>
-</body>
-</html>

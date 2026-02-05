@@ -35,6 +35,7 @@
         /* --- MENUS --- */
         #menu-container { position: absolute; z-index: 100; background: rgba(0,0,0,0.95); width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         
+        /* PC Scaling: 95% */
         .screen { 
             display: none; flex-direction: column; align-items: center; width: 100%; max-width: 1200px; 
             transition: transform 0.3s ease; 
@@ -53,9 +54,9 @@
             50% { filter: drop-shadow(0 0 25px var(--accent)); }
         }
 
-        /* --- CUSTOM USERNAME EFFECTS (ANIMATED) --- */
+        /* --- CUSTOM USERNAME EFFECTS --- */
         
-        /* 1. John (Purple/Gold Pulse) */
+        /* 1. JOHN (Purple/Gold) */
         .user-john {
             color: #7851a9 !important;
             font-family: 'Brush Script MT', cursive; 
@@ -65,111 +66,50 @@
         }
         @keyframes goldPulse { 0% { text-shadow: 0 0 5px gold; } 100% { text-shadow: 0 0 20px gold, 0 0 10px #ff00ff; } }
 
-        /* 2. Cyber Glitch (Jittery Shake) */
-        .user-glitch {
+        /* 2. LA BAMBA (Electric Joker) */
+        .user-bamba {
             font-family: 'Courier New', monospace;
-            color: #00ff41;
             font-weight: 900;
-            display: inline-block; /* Required for transform */
-            animation: glitchAnim 0.3s infinite;
+            color: #00ffff; /* Base Electric Blue */
+            text-shadow: 2px 2px 0px #ffff00; /* Start with Yellow Shadow */
+            display: inline-block;
+            animation: electricGlitch 0.2s infinite;
         }
-        @keyframes glitchAnim {
-            0% { text-shadow: 2px 0 red, -2px 0 blue; transform: translate(0,0); }
-            25% { text-shadow: -2px 0 red, 2px 0 blue; transform: translate(-1px, 1px); }
-            50% { text-shadow: 2px 0 blue, -2px 0 red; transform: translate(1px, -1px); }
-            75% { text-shadow: -2px 0 blue, 2px 0 red; transform: translate(0, 1px); }
-            100% { text-shadow: 2px 0 red, -2px 0 blue; transform: translate(0,0); }
-        }
-
-        /* 3. Inferno (Heat Haze) */
-        .user-inferno {
-            font-family: Impact, sans-serif;
-            background: linear-gradient(to top, #ff0000, #ffcc00);
-            -webkit-background-clip: text; color: transparent;
-            animation: infernoAnim 1.5s infinite alternate;
-        }
-        @keyframes infernoAnim {
-            0% { filter: drop-shadow(0 -2px 2px rgba(255, 69, 0, 0.6)); transform: scale(1); }
-            100% { filter: drop-shadow(0 -5px 8px rgba(255, 69, 0, 1)); transform: scale(1.05); }
+        @keyframes electricGlitch {
+            0% { transform: translate(0, 0); text-shadow: 2px 2px 0px #ffff00; color: #00ffff; }
+            25% { transform: translate(-2px, 1px); text-shadow: -2px 2px 0px #0000ff; /* Blue Shadow */ }
+            50% { transform: translate(2px, -1px); text-shadow: 0px 0px 10px #ffffff; color: #ffffff; /* White Flash */ }
+            75% { transform: translate(0, 2px); text-shadow: 2px -2px 0px #0000ff; color: #00ffff; }
+            100% { transform: translate(0, 0); }
         }
 
-        /* 4. Diamond (Shimmer) */
-        .user-diamond {
-            font-family: Georgia, serif;
-            color: #e0f7fa;
-            font-weight: bold;
-            animation: diamondAnim 2s infinite ease-in-out;
-        }
-        @keyframes diamondAnim {
-            0% { text-shadow: 0 0 5px #00ffff; color: #b2ebf2; }
-            50% { text-shadow: 0 0 20px #ffffff, 0 0 30px #00ffff; color: #ffffff; }
-            100% { text-shadow: 0 0 5px #00ffff; color: #b2ebf2; }
-        }
+        /* Example Effects for Menu */
+        .user-glitch { font-family: 'Courier New', monospace; color: #00ff41; font-weight: 900; display: inline-block; animation: glitchAnim 0.3s infinite; }
+        @keyframes glitchAnim { 0% { text-shadow: 2px 0 red, -2px 0 blue; transform: translate(0,0); } 25% { text-shadow: -2px 0 red, 2px 0 blue; transform: translate(-1px, 1px); } 50% { text-shadow: 2px 0 blue, -2px 0 red; transform: translate(1px, -1px); } 75% { text-shadow: -2px 0 blue, 2px 0 red; transform: translate(0, 1px); } 100% { text-shadow: 2px 0 red, -2px 0 blue; transform: translate(0,0); } }
 
-        /* 5. RGB Gamer (Hue Cycle) */
-        .user-gamer {
-            font-family: Verdana, sans-serif;
-            background-image: linear-gradient(45deg, #ff0000, #ffff00, #00ff00, #0000ff, #ff00ff);
-            -webkit-background-clip: text; color: transparent;
-            font-weight: 900;
-            animation: hueRotate 3s infinite linear;
-        }
+        .user-inferno { font-family: Impact, sans-serif; background: linear-gradient(to top, #ff0000, #ffcc00); -webkit-background-clip: text; color: transparent; animation: infernoAnim 1.5s infinite alternate; }
+        @keyframes infernoAnim { 0% { filter: drop-shadow(0 -2px 2px rgba(255, 69, 0, 0.6)); transform: scale(1); } 100% { filter: drop-shadow(0 -5px 8px rgba(255, 69, 0, 1)); transform: scale(1.05); } }
+
+        .user-diamond { font-family: Georgia, serif; color: #e0f7fa; font-weight: bold; animation: diamondAnim 2s infinite ease-in-out; }
+        @keyframes diamondAnim { 0% { text-shadow: 0 0 5px #00ffff; color: #b2ebf2; } 50% { text-shadow: 0 0 20px #ffffff, 0 0 30px #00ffff; color: #ffffff; } 100% { text-shadow: 0 0 5px #00ffff; color: #b2ebf2; } }
+
+        .user-gamer { font-family: Verdana, sans-serif; background-image: linear-gradient(45deg, #ff0000, #ffff00, #00ff00, #0000ff, #ff00ff); -webkit-background-clip: text; color: transparent; font-weight: 900; animation: hueRotate 3s infinite linear; }
         @keyframes hueRotate { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
 
-        /* 6. Synthwave (Neon Pulse) */
-        .user-synth {
-            font-family: Impact, sans-serif;
-            font-style: italic;
-            background: linear-gradient(180deg, #ff00cc, #3333ff);
-            -webkit-background-clip: text; color: transparent;
-            animation: synthAnim 1s infinite alternate;
-        }
-        @keyframes synthAnim {
-            0% { filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.5)); }
-            100% { filter: drop-shadow(2px 2px 5px #ff00de); }
-        }
+        .user-synth { font-family: Impact, sans-serif; font-style: italic; background: linear-gradient(180deg, #ff00cc, #3333ff); -webkit-background-clip: text; color: transparent; animation: synthAnim 1s infinite alternate; }
+        @keyframes synthAnim { 0% { filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.5)); } 100% { filter: drop-shadow(2px 2px 5px #ff00de); } }
 
-        /* 7. Midas Touch (Moving Sheen) */
-        .user-midas {
-            font-family: Georgia, serif;
-            /* Extra width for moving gradient */
-            background: linear-gradient(110deg, #bf953f 20%, #fcf6ba 40%, #bf953f 60%, #aa771c 80%);
-            background-size: 200% auto;
-            -webkit-background-clip: text; color: transparent;
-            font-weight: bold;
-            animation: midasAnim 3s linear infinite;
-        }
-        @keyframes midasAnim {
-            to { background-position: 200% center; }
-        }
+        .user-midas { font-family: Georgia, serif; background: linear-gradient(110deg, #bf953f 20%, #fcf6ba 40%, #bf953f 60%, #aa771c 80%); background-size: 200% auto; -webkit-background-clip: text; color: transparent; font-weight: bold; animation: midasAnim 3s linear infinite; }
+        @keyframes midasAnim { to { background-position: 200% center; } }
         
-        /* 8. Sparkle (Twinkle) */
-        .user-sparkle {
-            font-family: 'Georgia', serif;
-            color: #fff;
-            animation: sparkleAnim 1.5s infinite alternate;
-        }
-        @keyframes sparkleAnim {
-            0% { opacity: 1; text-shadow: 0 0 5px #fff, 0 0 10px #ff00de; }
-            50% { opacity: 0.8; text-shadow: 0 0 20px #fff, 0 0 30px #00ffff; }
-            100% { opacity: 1; text-shadow: 0 0 5px #fff, 0 0 10px #ff00de; }
-        }
+        .user-sparkle { font-family: 'Georgia', serif; color: #fff; animation: sparkleAnim 1.5s infinite alternate; }
+        @keyframes sparkleAnim { 0% { opacity: 1; text-shadow: 0 0 5px #fff, 0 0 10px #ff00de; } 50% { opacity: 0.8; text-shadow: 0 0 20px #fff, 0 0 30px #00ffff; } 100% { opacity: 1; text-shadow: 0 0 5px #fff, 0 0 10px #ff00de; } }
 
-        .tech-panel {
-            background: rgba(10, 10, 10, 0.8); border: 1px solid var(--accent);
-            box-shadow: 0 0 20px var(--glow); border-radius: 8px; padding: 30px;
-            display: flex; flex-direction: column; align-items: center; backdrop-filter: blur(10px);
-        }
-
+        .tech-panel { background: rgba(10, 10, 10, 0.8); border: 1px solid var(--accent); box-shadow: 0 0 20px var(--glow); border-radius: 8px; padding: 30px; display: flex; flex-direction: column; align-items: center; backdrop-filter: blur(10px); }
         .input-std { background: #111; border: 1px solid #333; color: #fff; padding: 12px; font-size: 18px; border-radius: 4px; margin: 10px 0; width: 300px; text-align: center; transition: 0.3s; }
         .input-std:focus { border-color: var(--accent); box-shadow: 0 0 10px var(--glow); outline: none; background: #000; }
         
-        .btn { 
-            padding: 15px 40px; font-size: 16px; cursor: pointer; border: none; font-weight: 800; 
-            border-radius: 4px; margin: 8px; width: 300px; text-transform: uppercase; 
-            transition: all 0.2s ease-in-out; box-shadow: 0 4px 15px rgba(0,0,0,0.5); 
-            letter-spacing: 1px; position: relative; overflow: hidden;
-        }
+        .btn { padding: 15px 40px; font-size: 16px; cursor: pointer; border: none; font-weight: 800; border-radius: 4px; margin: 8px; width: 300px; text-transform: uppercase; transition: all 0.2s ease-in-out; box-shadow: 0 4px 15px rgba(0,0,0,0.5); letter-spacing: 1px; position: relative; overflow: hidden; }
         .btn:hover { transform: translateY(-2px) scale(1.02); filter: brightness(1.2); letter-spacing: 3px; box-shadow: 0 0 20px var(--glow); }
         
         .btn-green { background: #00ffcc; color: #000; }
@@ -181,27 +121,17 @@
 
         #main-split { display: flex; flex-direction: row; gap: 30px; align-items: flex-start; margin-top: 10px; }
         .menu-col { width: 340px; display: flex; flex-direction: column; align-items: center; }
-        
         .user-info { margin-bottom: 20px; font-size: 16px; color: #ccc; text-align: center; width: 100%; line-height: 1.6; border-bottom: 1px solid #333; padding-bottom: 15px; }
         .user-info span { color: #fff; font-weight: bold; font-size: 18px; }
         
-        .lb-header-text { 
-            color: var(--accent); font-size: 14px; font-weight: bold; text-align: center; 
-            margin-bottom: 10px; margin-top: 20px; text-transform: uppercase; letter-spacing: 1px; 
-            border-bottom: 1px solid #333; padding-bottom: 5px; width: 100%;
-        }
+        .lb-header-text { color: var(--accent); font-size: 14px; font-weight: bold; text-align: center; margin-bottom: 10px; margin-top: 20px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #333; padding-bottom: 5px; width: 100%; }
         .lb-header-text:first-child { margin-top: 0; }
-
         .lb-list { width: 100%; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #fff; }
         .lb-item { display: flex; justify-content: space-between; padding: 8px 5px; border-bottom: 1px solid #1a1a1a; transition: background 0.2s; }
         .lb-item:hover { background: rgba(255,255,255,0.05); }
         .rank-num { color: #ffcc00; font-weight: bold; margin-right: 5px; } 
         
-        .scroll-text {
-            max-height: 400px;
-            overflow-y: auto; text-align: left; font-size: 14px; color: #ccc; line-height: 1.6;
-            padding-right: 10px; width: 100%;
-        }
+        .scroll-text { max-height: 400px; overflow-y: auto; text-align: left; font-size: 14px; color: #ccc; line-height: 1.6; padding-right: 10px; width: 100%; }
         .scroll-text p { margin-bottom: 15px; }
         .scroll-text::-webkit-scrollbar { width: 5px; }
         .scroll-text::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
@@ -225,17 +155,7 @@
         .player-item { padding: 12px; cursor: pointer; border-bottom: 1px solid #222; color: #888; font-weight: bold; transition: 0.2s; }
         .player-item:hover { background: #111; color: #fff; padding-left: 15px; }
         .player-item.selected { background: var(--glow); color: var(--accent); border-color: var(--accent); }
-        .stat-user-title { font-size: 32px; color: var(--accent); font-weight: 900; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px var(--glow); }
-        .stat-section-label { font-size: 12px; color: #666; margin-bottom: 8px; letter-spacing: 1px; font-weight: bold; border-bottom: 1px solid #333; padding-bottom: 4px; width: 100%; display:block; }
-        .stat-row { display: flex; gap: 15px; margin-bottom: 20px; width: 100%; }
-        .stat-card { flex: 1; background: #111; border: 1px solid #333; border-radius: 4px; padding: 10px; text-align: center; }
-        .stat-card-val { font-size: 20px; color: #fff; font-weight: 900; font-family: monospace; }
-        .stat-card-val.highlight { color: #ffcc00; }
-        .history-wrapper { flex: 1; overflow-y: auto; border: 1px solid #222; background: #0a0a0a; border-radius: 4px; }
-        .history-table { width: 100%; border-collapse: collapse; font-size: 12px; font-family: monospace; }
-        .history-table th { background: #111; color: var(--accent); padding: 10px; text-align: center; position: sticky; top: 0; border-bottom: 1px solid #333; z-index: 2; }
-        .history-table td { padding: 8px; border-bottom: 1px solid #222; text-align: center; color: #ccc; }
-
+        
         .game-area { display: flex; flex-direction: row; justify-content: center; align-items: flex-start; gap: 40px; transform: scale(0.9); transition: 0.5s; }
         @media (max-height: 950px) { .game-area { transform: scale(0.75); } }
         @media only screen and (max-width: 1200px) { .game-area { transform: scale(0.65); transform-origin: center center; } }
@@ -305,9 +225,22 @@
         }
 
         canvas { display: block; }
+        
+        /* Stat Cards */
+        .stat-user-title { font-size: 32px; color: var(--accent); font-weight: 900; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px var(--glow); }
+        .stat-section-label { font-size: 12px; color: #666; margin-bottom: 8px; letter-spacing: 1px; font-weight: bold; border-bottom: 1px solid #333; padding-bottom: 4px; width: 100%; display:block; }
+        .stat-row { display: flex; gap: 15px; margin-bottom: 20px; width: 100%; }
+        .stat-card { flex: 1; background: #111; border: 1px solid #333; border-radius: 4px; padding: 10px; text-align: center; }
+        .stat-card-val { font-size: 20px; color: #fff; font-weight: 900; font-family: monospace; }
+        .stat-card-val.highlight { color: #ffcc00; }
+        .history-wrapper { flex: 1; overflow-y: auto; border: 1px solid #222; background: #0a0a0a; border-radius: 4px; }
+        .history-table { width: 100%; border-collapse: collapse; font-size: 12px; font-family: monospace; }
+        .history-table th { background: #111; color: var(--accent); padding: 10px; text-align: center; position: sticky; top: 0; border-bottom: 1px solid #333; z-index: 2; }
+        .history-table td { padding: 8px; border-bottom: 1px solid #222; text-align: center; color: #ccc; }
+        .history-table tr:hover td { background: #151515; color: #fff; }
     </style>
 </head>
-    <body>
+<body>
     <button id="home-btn" class="hidden" onclick="goHome()">HOME</button>
 
     <div id="menu-container">
@@ -342,7 +275,8 @@
                             <span class="user-gamer">Darel</span>
                             <span class="user-synth">Josh</span>
                             <span class="user-midas">Calvin</span>
-                            <span class="user-sparkle">Starlight</span> </div>
+                            <span class="user-sparkle">Starlight</span>
+                        </div>
 
                         <div class="lb-header-text" style="margin-top: 25px; margin-bottom: 10px;">CUSTOM SERVERS</div>
                         <p>If anyone would like their own private server with its own custom url then I will set that up for a one time payment of $5. If your not satisfied with the performance I can refund you if the server isnt meeting your needs.</p>
@@ -494,15 +428,20 @@
         // --- HELPER: CUSTOM USERNAME EFFECTS ---
         function formatUserHTML(username) {
             if (!username) return 'Guest';
+            const cleanName = username.trim();
             
-            // Only "John" gets the effect globally in the code
-            // The other effects (Glitch, Fire, etc.) exist in CSS for the "About" menu
-            // but won't automatically apply here unless you add them later.
-            if (username.trim() === 'John') {
-                return `<span class="user-john">${username.toUpperCase()}</span>`;
+            // 1. John (Purple/Gold) - Only "John"
+            if (cleanName === 'John') {
+                return `<span class="user-john">John</span>`;
             }
 
-            return username; // Everyone else is normal
+            // 2. La Bamba🃏 (Electric Joker) - Exact Match
+            if (cleanName === 'La Bamba🃏') {
+                return `<span class="user-bamba">La Bamba🃏</span>`;
+            }
+
+            // All other names are normal
+            return username; 
         }
 
         function setTheme(hex) {
@@ -1192,5 +1131,3 @@
     </script>
 </body>
 </html>
-
-

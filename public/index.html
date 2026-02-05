@@ -178,7 +178,16 @@
         .side-canvas { width: 100%; display: block; }
         .garbage-container { width: 12px; height: 900px; background: #111; border: 1px solid #333; position: absolute; left: -20px; overflow: hidden; }
         .garbage-fill { position: absolute; bottom: 0; width: 100%; background: #ff0033; transition: height 0.2s; }
-        #ffa-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+
+        /* --- UPDATED FFA GRID (ROWS FIRST, THEN COLUMNS) --- */
+        #ffa-grid { 
+            display: grid;
+            /* Force exactly 2 rows. New items will create new columns to the right. */
+            grid-template-rows: repeat(2, auto);
+            grid-auto-flow: column;
+            gap: 15px;
+        }
+
         .mini-card { display: flex; flex-direction: column; align-items: center; background: #000; border: 1px solid #333; padding: 5px; }
 
         #home-btn { position: fixed; top: 20px; left: 20px; z-index: 2000; padding: 10px 25px; background: #ff0033; color: #fff; border: none; font-weight: 900; cursor: pointer; }
@@ -1357,3 +1366,4 @@
             requestAnimationFrame(loop);
         }
     </script>
+

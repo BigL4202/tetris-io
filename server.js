@@ -6,11 +6,18 @@ const io = require('socket.io')(http);
 const path = require('path');
 const fs = require('fs');
 
-// Serve static files from the 'public' folder (where index.html lives)
+// Serve static files - check 'public' folder first, then root
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(__dirname));
 
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    const publicPath = path.join(__dirname, 'public', 'index.html');
+    const rootPath = path.join(__dirname, 'index.html');
+    if (fs.existsSync(publicPath)) {
+        res.sendFile(publicPath);
+    } else {
+        res.sendFile(rootPath);
+    }
 });
 
 // --- DATA STORAGE ---

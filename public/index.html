@@ -1123,7 +1123,9 @@
         
         class Player {
             constructor(){
-                this.ctx=document.getElementById('p1').getContext('2d');
+                const c = document.getElementById('p1');
+                if (!c) { console.error('FATAL: Canvas #p1 not found!'); return; }
+                this.ctx=c.getContext('2d');
                 this.nCtx=document.getElementById('p1-n').getContext('2d');
                 this.hCtx=document.getElementById('p1-h').getContext('2d');
                 this.gBar=document.getElementById('p1-g');
@@ -1565,6 +1567,7 @@
             hold:'ShiftLeft'
         };
         
+        // Ensure DOM is ready before adding listeners
         window.addEventListener('keydown', e => {
             if(gameMode === 'zen' || gameMode === 'apm_test') {
                 if(document.activeElement.tagName !== 'INPUT' && e.code === 'KeyR') {
@@ -1805,4 +1808,5 @@
             div.innerHTML = html;
         }
     </script>
-
+</body>
+</html>

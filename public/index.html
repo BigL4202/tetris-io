@@ -34,9 +34,25 @@
         @keyframes midasAnim { to { background-position: 200% center; } }
         .user-sparkle { font-family: 'Georgia', serif; color: #fff; animation: sparkleAnim 1.5s infinite alternate; }
         @keyframes sparkleAnim { 0% { opacity: 1; text-shadow: 0 0 5px #fff, 0 0 10px #ff00de; } 50% { opacity: 0.8; text-shadow: 0 0 20px #fff, 0 0 30px #00ffff; } 100% { opacity: 1; text-shadow: 0 0 5px #fff, 0 0 10px #ff00de; } }
-        .user-barnes { font-family: 'Impact', 'Arial Black', sans-serif; color: #999; letter-spacing: 3px; font-weight: 900; text-shadow: 0 0 15px rgba(255,255,0,0.6), 0 0 30px rgba(255,255,0,0.3); animation: barnesSpark 1.5s infinite; position: relative; }
-        @keyframes barnesSpark { 0% { color: #999; text-shadow: 0 0 15px rgba(255,255,0,0.6), 0 0 30px rgba(255,255,0,0.3); } 15% { color: #fff; text-shadow: 0 0 8px #4488ff, 0 0 20px #2266ff, 0 0 35px rgba(255,255,0,0.5); } 30% { color: #bbb; text-shadow: 0 0 15px rgba(255,255,0,0.6), 0 0 30px rgba(255,255,0,0.3); } 55% { color: #fff; text-shadow: 0 0 12px #66aaff, 0 0 25px #3377ff, 0 0 40px rgba(255,255,0,0.6); } 70% { color: #aaa; text-shadow: 0 0 15px rgba(255,255,0,0.5); } 100% { color: #999; text-shadow: 0 0 15px rgba(255,255,0,0.6), 0 0 30px rgba(255,255,0,0.3); } }
+        .user-barnes { font-family: 'Impact', 'Arial Black', sans-serif; color: #c0c0c0; letter-spacing: 4px; font-weight: 900; text-shadow: 0 0 10px rgba(255,255,0,0.8), 0 0 25px rgba(255,200,0,0.4), 0 0 50px rgba(68,136,255,0.2); animation: barnesSpark 2s infinite, barnesGlitch 4s infinite; position: relative; display: inline-block; background: linear-gradient(90deg, #999, #ddd, #fff, #ddd, #999); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 8px rgba(255,255,0,0.6)) drop-shadow(0 0 20px rgba(68,136,255,0.3)); }
+        @keyframes barnesSpark { 0%,100% { filter: drop-shadow(0 0 8px rgba(255,255,0,0.6)) drop-shadow(0 0 15px rgba(68,136,255,0.2)); background-position: 0% center; } 10% { filter: drop-shadow(0 0 20px rgba(68,136,255,0.9)) drop-shadow(0 0 40px rgba(255,255,0,0.8)) drop-shadow(0 0 60px #4488ff); } 12% { filter: drop-shadow(0 0 6px rgba(255,255,0,0.4)); } 50% { background-position: 100% center; } 60% { filter: drop-shadow(0 0 25px rgba(100,180,255,0.9)) drop-shadow(0 0 50px rgba(255,200,0,0.7)); } 62% { filter: drop-shadow(0 0 5px rgba(255,255,0,0.3)); } }
+        @keyframes barnesGlitch { 0%,94%,100% { transform: translate(0); } 95% { transform: translate(-2px,1px); } 96% { transform: translate(2px,-1px); } 97% { transform: translate(-1px,-1px); } 98% { transform: translate(1px,2px); } 99% { transform: translate(0); } }
 
+
+        /* Board effects */
+        .board-flash { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; animation: flashAnim 0.4s ease-out forwards; }
+        @keyframes flashAnim { 0% { opacity: 1; } 100% { opacity: 0; } }
+        .muzzle-flash { background: radial-gradient(circle, rgba(255,200,0,0.8), rgba(255,100,0,0.4), transparent 70%); }
+        .wormhole-vortex { background: radial-gradient(circle, rgba(136,0,255,0.6), rgba(80,0,200,0.3), transparent 60%); animation: vortexSpin 0.6s ease-out forwards; }
+        @keyframes vortexSpin { 0% { opacity: 1; transform: rotate(0deg) scale(0.5); } 50% { opacity: 0.8; transform: rotate(180deg) scale(1.2); } 100% { opacity: 0; transform: rotate(360deg) scale(0.8); } }
+        .jackpot-banner { position: fixed; top: 30%; left: 50%; transform: translate(-50%,-50%) scale(0); font-size: 64px; font-weight: 900; color: #FFD700; text-shadow: 0 0 30px #FFD700, 0 0 60px rgba(255,200,0,0.5), 2px 2px 0 #996600; z-index: 200; pointer-events: none; animation: jackpotPop 2s ease-out forwards; font-family: Impact, sans-serif; letter-spacing: 6px; }
+        @keyframes jackpotPop { 0% { transform: translate(-50%,-50%) scale(0) rotate(-10deg); opacity: 0; } 15% { transform: translate(-50%,-50%) scale(1.3) rotate(3deg); opacity: 1; } 30% { transform: translate(-50%,-50%) scale(1) rotate(0deg); } 80% { transform: translate(-50%,-50%) scale(1); opacity: 1; } 100% { transform: translate(-50%,-60%) scale(0.8); opacity: 0; } }
+        .coin { position: fixed; width: 12px; height: 12px; background: radial-gradient(circle at 30% 30%, #FFD700, #CC9900); border-radius: 50%; border: 1px solid #AA7700; z-index: 199; pointer-events: none; animation: coinFall linear forwards; box-shadow: 0 0 6px rgba(255,215,0,0.5); }
+        @keyframes coinFall { 0% { opacity: 1; } 90% { opacity: 1; } 100% { opacity: 0; } }
+        .black-hole-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 20; pointer-events: none; background: radial-gradient(circle, #000 30%, rgba(80,0,160,0.8) 50%, rgba(40,0,80,0.4) 70%, transparent 85%); animation: bhPulse 0.8s infinite alternate; border-radius: 50%; }
+        @keyframes bhPulse { 0% { transform: scale(0.9); opacity: 0.9; } 100% { transform: scale(1.05); opacity: 1; } }
+        .mutator-alert { position: fixed; top: 12%; left: 50%; transform: translateX(-50%); font-size: 18px; font-weight: 900; padding: 8px 24px; border-radius: 6px; z-index: 150; pointer-events: none; animation: alertSlide 2.5s ease-out forwards; white-space: nowrap; }
+        @keyframes alertSlide { 0% { opacity: 0; top: 8%; } 10% { opacity: 1; top: 12%; } 80% { opacity: 1; } 100% { opacity: 0; top: 8%; } }
         .tech-panel { background: rgba(10,10,10,0.8); border: 1px solid var(--accent); box-shadow: 0 0 20px var(--glow); border-radius: 8px; padding: 30px; display: flex; flex-direction: column; align-items: center; backdrop-filter: blur(10px); }
         .input-std { background: #111; border: 1px solid #333; color: #fff; padding: 12px; font-size: 18px; border-radius: 4px; margin: 10px 0; width: 300px; text-align: center; transition: 0.3s; }
         .input-std:focus { border-color: var(--accent); box-shadow: 0 0 10px var(--glow); outline: none; background: #000; }
@@ -167,6 +183,11 @@
         @keyframes slotWin { 0% { transform: scale(1); } 100% { transform: scale(1.1); } }
         #cultist-cd-bar { width: 100%; height: 10px; background: #220000; border-radius: 4px; margin-top: 8px; overflow: hidden; }
         #cultist-cd-fill { width: 0%; height: 100%; background: #ff0000; border-radius: 4px; transition: width 0.1s linear; }
+        #rune-sigil { display: flex; gap: 16px; justify-content: center; }
+        .rune { width: 50px; height: 50px; border-radius: 50%; border: 3px solid #440000; background: #1a0000; transition: all 0.3s; }
+        .rune.lit { border-color: #ff0000; background: #660000; box-shadow: 0 0 20px rgba(255,0,0,0.6); }
+        .rune.ready { border-color: #ff0000; background: #ff0000; box-shadow: 0 0 30px #ff0000; animation: runePulse 0.5s infinite alternate; }
+        @keyframes runePulse { 0% { box-shadow: 0 0 15px #ff0000; } 100% { box-shadow: 0 0 40px #ff0000, 0 0 60px rgba(255,0,0,0.3); } }
         #magazine { display: flex; flex-direction: column-reverse; gap: 3px; align-items: center; }
         .bullet-slot { width: 36px; height: 16px; border: 2px solid #555; background: #111; transition: all 0.2s; border-radius: 2px; }
         .bullet-slot.loaded { background: #ffcc00; border-color: #ffcc00; box-shadow: 0 0 8px rgba(255,204,0,0.5); }
@@ -182,6 +203,34 @@
         #gwell-cd-fill { width: 0%; height: 100%; background: #8800ff; border-radius: 4px; transition: width 0.1s linear; }
         #sniper-cd-bar { width: 100%; height: 8px; background: #332200; border-radius: 4px; margin-top: 8px; overflow: hidden; }
         #sniper-cd-fill { width: 0%; height: 100%; background: #ffcc00; border-radius: 4px; transition: width 0.1s linear; }
+
+
+        /* Diver */
+        .diver-gauge { width: 30px; height: 140px; background: #0a0a1a; border: 2px solid #004466; border-radius: 4px; margin: 0 auto; position: relative; overflow: hidden; }
+        .diver-gauge-fill { position: absolute; bottom: 0; width: 100%; background: #00cc66; transition: height 0.3s, background 0.3s; }
+        .diver-zone { position: absolute; width: 100%; opacity: 0.15; }
+        .diver-green { bottom: 0; height: 19.2%; background: #00cc66; }
+        .diver-yellow { bottom: 19.2%; height: 26.9%; background: #cccc00; }
+        .diver-red { bottom: 46.1%; height: 53.9%; background: #ff3333; }
+        @keyframes rustBlink { 0%{opacity:1;} 50%{opacity:0.3;} 100%{opacity:1;} }
+        .flood-warning { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 36px; font-weight: 900; color: #ff0033; text-shadow: 0 0 30px #ff0033; animation: floodWarn 0.3s infinite alternate; z-index: 100; pointer-events: none; }
+        @keyframes floodWarn { 0%{opacity:1;transform:translate(-50%,-50%) scale(1);} 100%{opacity:0.5;transform:translate(-50%,-50%) scale(1.1);} }
+        /* Speedster Tachometer */
+        .tach-wrap { position: relative; width: 160px; height: 90px; margin: 0 auto; overflow: hidden; }
+        #tach-bg { width: 160px; height: 160px; border-radius: 50%; border: 4px solid #888; background: #1a1a1a; position: absolute; top: 0; left: 0; transition: all 0.3s; }
+        .tach-marks { position: absolute; top: 0; left: 0; width: 160px; height: 160px; }
+        .tach-mark { position: absolute; width: 2px; height: 12px; background: #555; top: 6px; left: 79px; transform-origin: 50% 74px; }
+        .tach-mark.major { height: 16px; width: 3px; background: #aaa; }
+        #speed-needle { position: absolute; width: 3px; height: 60px; background: linear-gradient(to top, #ff0033, #fff); top: 20px; left: 78.5px; transform-origin: 50% 60px; transform: rotate(-135deg); transition: transform 0.15s ease-out; border-radius: 2px; box-shadow: 0 0 8px rgba(255,0,51,0.5); }
+        .tach-center { position: absolute; width: 14px; height: 14px; border-radius: 50%; background: #fff; top: 73px; left: 73px; z-index: 2; box-shadow: 0 0 10px rgba(255,255,255,0.5); }
+        #speed-gear-num { font-size: 48px; font-weight: 900; text-align: center; font-family: 'Impact', sans-serif; margin-top: 4px; transition: all 0.2s; }
+        #speed-velo-txt { font-size: 16px; text-align: center; font-weight: 900; margin-top: -4px; }
+        .nitro-wrap { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+        .nitro-label { font-size: 11px; color: #00ccff; font-weight: 900; letter-spacing: 1px; writing-mode: vertical-rl; text-orientation: mixed; }
+        .nitro-bar { width: 30px; height: 80px; background: #0a1a2a; border: 2px solid #006699; border-radius: 4px; position: relative; overflow: hidden; flex-shrink: 0; }
+        #nitro-fill { position: absolute; bottom: 0; width: 100%; background: linear-gradient(to top, #003366, #00ccff); transition: height 0.15s; border-radius: 2px; }
+        .nitro-bubble { position: absolute; width: 4px; height: 4px; background: rgba(0,204,255,0.4); border-radius: 50%; animation: nitroBubble 2s infinite; }
+        @keyframes nitroBubble { 0%{bottom:0;opacity:0.8;} 100%{bottom:100%;opacity:0;} }
 
         /* Admin Panel */
         #admin-panel { position: fixed; top: 50px; left: 10px; z-index: 2000; background: rgba(0,0,0,0.95); border: 2px solid #ffcc00; box-shadow: 0 0 20px rgba(255,204,0,0.3); border-radius: 8px; width: 280px; display: none; flex-direction: column; font-family: monospace; font-size: 12px; max-height: 500px; overflow-y: auto; }
@@ -336,9 +385,27 @@
     <div id="game-ui" class="game-area hidden">
         <div id="class-hud">
             <div id="hud-highroller" style="display:none;"><div class="class-hud-label">JACKPOT</div><div id="jackpot-ticker">Luck: 0.1%</div><div id="slot-reels"><div class="slot-reel" id="sr0">-</div><div class="slot-reel" id="sr1">-</div><div class="slot-reel" id="sr2">-</div></div></div>
-            <div id="hud-cultist" style="display:none;"><div class="class-hud-label">EXORCISM (Z)</div><div style="text-align:center;font-size:13px;color:#888;margin-bottom:6px;">Clears 10 garbage lines<br>Sends queued garbage x1.5</div><div id="cultist-cd-bar"><div id="cultist-cd-fill"></div></div><div id="cultist-cd-text" style="text-align:center;font-size:14px;color:#00ff88;margin-top:4px;font-weight:900;">READY</div></div>
+            <div id="hud-cultist" style="display:none;"><div class="class-hud-label">RUNES (Z to Sacrifice)</div><div id="rune-sigil"><div class="rune" id="rune0"></div><div class="rune" id="rune1"></div><div class="rune" id="rune2"></div></div><div id="cultist-cd-bar"><div id="cultist-cd-fill"></div></div><div id="cultist-cd-text" style="text-align:center;font-size:14px;color:#00ff88;margin-top:4px;font-weight:900;">READY</div></div>
             <div id="hud-sniper" style="display:none;"><div class="class-hud-label">MAGAZINE</div><div id="magazine"></div><div class="class-hud-label" style="margin-top:10px;">TARGET</div><div id="sniper-target-name" style="color:#ff0055;font-weight:900;font-size:20px;text-align:center;">---</div><div class="class-hud-label" style="margin-top:10px;">I-PIECE (Z)</div><div id="sniper-cd-bar"><div id="sniper-cd-fill"></div></div></div>
-            <div id="hud-gwell" style="display:none;"><div class="class-hud-label">GRAVITY WELL</div><div id="gwell-orb">\u{1F30C}</div><div class="class-hud-label" style="margin-top:10px;">WORMHOLE (Z)</div><div id="gwell-cd-bar"><div id="gwell-cd-fill"></div></div><div id="gwell-cd-text" style="text-align:center;font-size:12px;color:#cc66ff;margin-top:4px;font-weight:900;">WORMHOLE READY</div><div style="text-align:center;font-size:11px;color:#666;margin-top:6px;">HOLD: 3s cooldown</div></div>
+            <div id="hud-gwell" style="display:none;"><div class="class-hud-label">GRAVITY WELL</div><div id="gwell-orb">\u{1F30C}</div><div style="text-align:center;font-size:11px;color:#ff4444;margin-top:4px;font-weight:900;">-1 LINE SENT (PASSIVE)</div><div class="class-hud-label" style="margin-top:8px;">WORMHOLE (Z)</div><div id="gwell-cd-bar"><div id="gwell-cd-fill"></div></div><div id="gwell-cd-text" style="text-align:center;font-size:12px;color:#cc66ff;margin-top:4px;font-weight:900;">WORMHOLE READY</div><div class="class-hud-label" style="margin-top:8px;">BLACK HOLE (X)</div><div id="gwell-charge-bar" style="width:100%;height:8px;background:#220044;border-radius:4px;overflow:hidden;"><div id="gwell-charge-fill" style="width:0%;height:100%;background:#8800ff;border-radius:4px;transition:width 0.2s;"></div></div><div id="gwell-charge-text" style="text-align:center;font-size:11px;color:#8800ff;margin-top:4px;font-weight:900;">0/20 LINES</div></div>
+            <div id="hud-speedster" style="display:none;">
+                <div class="class-hud-label">TACHOMETER</div>
+                <div class="tach-wrap"><div id="tach-bg"><div class="tach-marks"></div></div><div id="speed-needle"></div><div class="tach-center"></div></div>
+                <div id="speed-gear-num" style="color:#888;">1</div>
+                <div id="speed-velo-txt" style="color:#888;">0%</div>
+                <div class="nitro-wrap">
+                    <div class="nitro-label">N2O</div>
+                    <div class="nitro-bar"><div id="nitro-fill" style="height:0%"></div></div>
+                    <div style="font-size:10px;color:#666;"><div>Z: PIT STOP</div><div>X: NITROUS</div></div>
+                </div>
+            </div>
+            <div id="hud-diver" style="display:none;">
+                <div class="class-hud-label">DEPTH GAUGE</div>
+                <div class="diver-gauge"><div id="diver-gauge-fill" class="diver-gauge-fill"></div><div class="diver-zone diver-green"></div><div class="diver-zone diver-yellow"></div><div class="diver-zone diver-red"></div></div>
+                <div id="diver-level-txt" style="text-align:center;font-size:14px;color:#00cc66;font-weight:900;margin-top:6px;">DEPTH: 0</div>
+                <div id="diver-rust" style="display:none;text-align:center;font-size:12px;color:#ff8800;font-weight:900;margin-top:4px;animation:rustBlink 0.5s infinite;">RUSTED!</div>
+                <div style="text-align:center;font-size:11px;color:#666;margin-top:8px;">Z: FLOOD GATES</div>
+            </div>
         </div>
         <div id="p1-root" class="player-root">
             <div class="stats-header">
@@ -370,21 +437,25 @@ const KICK_INDEX={"0_1":0,"1_0":1,"1_2":2,"2_1":3,"2_3":4,"3_2":5,"3_0":6,"0_3":
 // === CLASS DATA ===
 const CLASS_DATA = {
     high_roller: { name:'HIGH ROLLER', icon:'\u{1F3B0}', desc:'Gamble your way to victory with progressive jackpot mechanics.',
-        pros:['Every line clear rolls for a 20-line jackpot','Jackpot odds increase every clear','Floor raises after each win'],
+        pros:['Every line clear rolls for a 20-line jackpot','Jackpot odds increase +0.25% per clear','Floor raises to 2.5% after first win'],
         cons:['Normal garbage output reduced by 50%','RNG dependent - might never hit','Early game is very weak'] },
-    cultist: { name:'CULTIST', icon:'\u{1F480}', desc:'Channel dark energy then unleash it all at once.',
-        pros:['Z: Clears 10 garbage lines from board + sends pending garbage x1.5','Massive burst damage if you tank hits','Exorcism can swing entire games'],
-        cons:['Receives 1.5x MORE garbage from enemies','15 second ability cooldown','Must have garbage on board to benefit'] },
+    cultist: { name:'CULTIST', icon:'\u{1F480}', desc:'Sacrifice your own board to charge runes, then unleash a devastating exorcism.',
+        pros:['Exorcism clears 10 garbage lines + sends queued garbage x1.5','Z: Sacrifice 5 lines to light a rune','10 second cooldown on sacrifice'],
+        cons:['Must take 15 lines of self-damage to charge (5 per rune)','Receives 1.25x MORE garbage from enemies'] },
     combo_sniper: { name:'COMBO SNIPER', icon:'\u{1F3AF}', desc:'Store ammunition from clears and unleash it all in one devastating triple or quad.',
         pros:['Max 19 lines of targeted damage in one shot','Z: Spawns I-piece on 8s cooldown','Quads clear 3 bottom lines + convert to bullets','Receives only 0.75x garbage'],
         cons:['Singles/Doubles send ZERO garbage','Must clear triples/quads to deal damage','Line clears cancel garbage but don\'t send it'] },
     gravity_well: { name:'GRAVITY WELL', icon:'\u{1F30C}', desc:'Warp spacetime to crush your opponents under their own weight.',
-        pros:['All garbage you send triples opponent gravity while queued','Z: Wormhole - 50% of opponents queued garbage placed instantly','Opponents struggle to survive your pressure'],
-        cons:['Can only use Hold every 3 seconds','Normal garbage output (no bonus)','Wormhole has 12 second cooldown'] },
+        pros:['All garbage you send triples opponent gravity while queued','Z: Wormhole - 50% of opponents queued garbage placed instantly','X: Black Hole - locks opponent hold for 3s (needs 20 lines sent)'],
+        cons:['Permanent -1 line sent on all attacks','Wormhole has 12 second cooldown'] },
+    speedster: { name:'SPEEDSTER', icon:'\u{26A1}', desc:'A drag racer that gets deadlier the faster you play.',
+        pros:['4th Gear: +2 lines sent at max speed','Z: Pit Stop clears garbage based on velocity','X: Nitrous - instant velocity boost'],
+        cons:['1st Gear: -1 line sent when slow','Receives 1.5x MORE garbage','Extreme gravity at high gears'] },
+    diver: { name:'DIVER', icon:'\u{1F30A}', desc:'Survive the rising tide and flood your opponents.',
+        pros:['Z: Flood Gates - drain your water and flood opponents','Flooded opponents cant hard drop past water line','Water slows piece gravity underwater'],
+        cons:['Water rises 1 row every 3 seconds','Next queue rusts if water above row 12 for 10s','Must manage water level constantly'] },
     locked1:{name:'COMING SOON',icon:'\u{1F512}',desc:'',pros:[],cons:[]},
-    locked2:{name:'COMING SOON',icon:'\u{1F512}',desc:'',pros:[],cons:[]},
-    locked3:{name:'COMING SOON',icon:'\u{1F512}',desc:'',pros:[],cons:[]},
-    locked4:{name:'COMING SOON',icon:'\u{1F512}',desc:'',pros:[],cons:[]}
+    locked2:{name:'COMING SOON',icon:'\u{1F512}',desc:'',pros:[],cons:[]}
 };
 
 let socket=null,gameActive=false,inputLocked=false,isSpectator=false,gameMode='zen',apmTimer=null,statsCache={};
@@ -394,10 +465,14 @@ let pendingInviteType=null,pendingInviteId=null;
 // Mutator state
 let selectedClass=null,activeClass=null;
 let hrJackpotChance=0.001,hrFloor=0.001,hrFloorStep=0;
-let cultCooldown=false,cultCdInterval=null;
+let cultRunes=0,cultExorcismReady=false,cultCooldown=false,cultCdInterval=null;
 let sniperBullets=0,sniperTargetId=null,sniperTargetName='---',sniperZCooldown=false,sniperZCdInterval=null;
 // Gravity Well state
-let gwellWormholeCooldown=false,gwellWormholeCdInterval=null,gwellHoldCooldown=false,gwellHoldTimer=null;
+let gwellWormholeCooldown=false,gwellWormholeCdInterval=null,gwellLinesSent=0,gwellBlackHoleReady=false;
+// Speedster state
+let speedVelocity=0,speedNitrous=0,speedGear=1;
+// Diver state
+let diverWaterLevel=0,diverWaterTimer=0,diverRustTimer=0,diverRusted=false,diverFloodCooldown=false,diverFloodCdInterval=null;
 
 function formatUserHTML(u){if(!u)return'Guest';const n=u.trim();if(n==='John')return'<span class="user-john">John</span>';if(n==='La Bamba\u{1F0CF}')return'<span class="user-bamba">La Bamba\u{1F0CF}</span>';if(n==='BARNESTTV')return'<span class="user-barnes">BARNESTTV</span>';return u;}
 function setTheme(h){const r=document.documentElement;r.style.setProperty('--accent',h);const rv=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);r.style.setProperty('--glow',`rgba(${rv},${g},${b},0.2)`);r.style.setProperty('--glow-strong',`rgba(${rv},${g},${b},0.4)`);}
@@ -409,7 +484,7 @@ function logOut(){localStorage.clear();location.reload();}
 
 function initClassGrid(){
     const grid=document.getElementById('class-grid'); grid.innerHTML='';
-    const keys=['high_roller','cultist','combo_sniper','gravity_well','locked1','locked2','locked3','locked4'];
+    const keys=['high_roller','cultist','combo_sniper','gravity_well','speedster','diver','locked1','locked2'];
     keys.forEach(k=>{const d=CLASS_DATA[k];const c=document.createElement('div');c.className='class-card'+(k.startsWith('locked')?' locked':'');
         c.innerHTML=`<div><span class="cc-icon">${d.icon}</span>${d.name}</div>`;
         if(!k.startsWith('locked')){c.onclick=()=>{document.querySelectorAll('.class-card').forEach(x=>x.classList.remove('selected'));c.classList.add('selected');selectedClass=k;showClassInfo(k);};}
@@ -472,11 +547,12 @@ function goHome(){
     document.getElementById('class-hud').style.display='none';
     hideAllClassHuds();setTheme('#00ffcc');navTo('scr-main');
 }
-function hideAllClassHuds(){['hud-highroller','hud-cultist','hud-sniper','hud-gwell'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
-    clearInterval(cultCdInterval);cultCooldown=false;
+function hideAllClassHuds(){['hud-highroller','hud-cultist','hud-sniper','hud-gwell','hud-speedster','hud-diver'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+    clearInterval(cultCdInterval);cultCooldown=false;cultRunes=0;cultExorcismReady=false;
     clearInterval(sniperZCdInterval);sniperZCooldown=false;
-    clearInterval(gwellWormholeCdInterval);gwellWormholeCooldown=false;
-    clearTimeout(gwellHoldTimer);gwellHoldCooldown=false;
+    clearInterval(gwellWormholeCdInterval);gwellWormholeCooldown=false;gwellLinesSent=0;gwellBlackHoleReady=false;
+    speedVelocity=0;speedNitrous=0;speedGear=1;
+    diverWaterLevel=0;diverWaterTimer=0;diverRustTimer=0;diverRusted=false;diverFloodCooldown=false;clearInterval(diverFloodCdInterval);
 }
 function openStats(){if(!socket)return alert("Login first.");socket.emit('request_all_stats');navTo('scr-stats');}
 function openBugs(){if(!socket)return alert("Login first.");socket.emit('request_bugs');navTo('scr-bugs');}
@@ -491,17 +567,21 @@ function startMutatorGame(seed,className){
     p1.initRNG(seed);p1.reset();gameActive=true;
     // Reset ALL class state
     hrJackpotChance=0.001;hrFloorStep=0;hrFloor=0.001;
-    cultCooldown=false;clearInterval(cultCdInterval);
+    cultRunes=0;cultExorcismReady=false;cultCooldown=false;clearInterval(cultCdInterval);
     sniperBullets=0;sniperTargetId=null;sniperTargetName='---';sniperZCooldown=false;clearInterval(sniperZCdInterval);
-    gwellWormholeCooldown=false;clearInterval(gwellWormholeCdInterval);gwellHoldCooldown=false;clearTimeout(gwellHoldTimer);
+    gwellWormholeCooldown=false;clearInterval(gwellWormholeCdInterval);gwellLinesSent=0;gwellBlackHoleReady=false;
+    speedVelocity=0;speedNitrous=0;speedGear=1;
+    diverWaterLevel=0;diverWaterTimer=0;diverRustTimer=0;diverRusted=false;diverFloodCooldown=false;clearInterval(diverFloodCdInterval);p1.holdLocked=false;p1.floodedWater=0;p1.floodTimer=null;
     // Init magazine bullets
     const mag=document.getElementById('magazine');mag.innerHTML='';for(let i=0;i<10;i++){const s=document.createElement('div');s.className='bullet-slot';s.id='bullet'+i;mag.appendChild(s);}
     // Show correct HUD
     document.getElementById('class-hud').style.display='flex';hideAllClassHuds();
     if(className==='high_roller'){document.getElementById('hud-highroller').style.display='block';updateJackpotUI();}
-    else if(className==='cultist'){document.getElementById('hud-cultist').style.display='block';document.getElementById('cultist-cd-fill').style.width='0%';document.getElementById('cultist-cd-text').innerText='READY';document.getElementById('cultist-cd-text').style.color='#00ff88';}
+    else if(className==='cultist'){document.getElementById('hud-cultist').style.display='block';updateRuneUI();document.getElementById('cultist-cd-fill').style.width='0%';document.getElementById('cultist-cd-text').innerText='READY';document.getElementById('cultist-cd-text').style.color='#00ff88';}
     else if(className==='combo_sniper'){document.getElementById('hud-sniper').style.display='block';updateMagazineUI();document.getElementById('sniper-cd-fill').style.width='0%';}
-    else if(className==='gravity_well'){document.getElementById('hud-gwell').style.display='block';document.getElementById('gwell-cd-fill').style.width='0%';document.getElementById('gwell-cd-text').innerText='WORMHOLE READY';document.getElementById('gwell-cd-text').style.color='#cc66ff';}
+    else if(className==='speedster'){document.getElementById('hud-speedster').style.display='block';updateSpeedsterUI();}
+    else if(className==='gravity_well'){document.getElementById('hud-gwell').style.display='block';document.getElementById('gwell-cd-fill').style.width='0%';document.getElementById('gwell-cd-text').innerText='WORMHOLE READY';document.getElementById('gwell-cd-text').style.color='#cc66ff';updateGwellUI();}
+    else if(className==='diver'){document.getElementById('hud-diver').style.display='block';updateDiverUI();}
     loop();
 }
 
@@ -512,103 +592,210 @@ function spinSlots(won){
     if(won){reels.forEach(r=>{r.innerText='7';r.classList.add('win');});setTimeout(()=>reels.forEach(r=>r.classList.remove('win')),3000);}
     else{reels.forEach(r=>{r.innerText=symbols[Math.floor(Math.random()*symbols.length)];r.classList.remove('win');});}
 }
+function updateRuneUI(){
+    for(let i=0;i<3;i++){const r=document.getElementById('rune'+i);if(!r)continue;r.className='rune';if(i<cultRunes){if(cultRunes>=3)r.classList.add('ready');else r.classList.add('lit');}}
+    cultExorcismReady=(cultRunes>=3);
+}
 function updateMagazineUI(){for(let i=0;i<10;i++){const el=document.getElementById('bullet'+i);if(el){el.className='bullet-slot';if(i<sniperBullets)el.classList.add('loaded');}}}
 function updateSniperCrosshair(){
     document.querySelectorAll('.sniper-crosshair').forEach(el=>el.remove());
     if(sniperTargetId){const cvs=document.getElementById('cvs_'+sniperTargetId);if(cvs&&cvs.parentElement){let ch=cvs.parentElement.querySelector('.sniper-crosshair');if(!ch){ch=document.createElement('div');ch.className='sniper-crosshair';cvs.parentElement.style.position='relative';cvs.parentElement.appendChild(ch);}ch.style.display='block';}}
 }
 
-// --- CULTIST: Z = clear 10 garbage lines + send pending garbage x1.5 ---
-function cultistAbility(){
-    if(!gameActive||isSpectator||activeClass!=='cultist'||cultCooldown)return;
-    // Count and remove up to 10 garbage lines from bottom of board
-    let removed=0;
-    for(let y=ROWS-1;y>=0&&removed<10;y--){
-        if(p1.grid[y].includes('#555')){p1.grid.splice(y,1);p1.grid.unshift(Array(COLS).fill(0));removed++;}
-    }
-    // Send all pending garbage x1.5
-    const toSend=Math.floor(p1.pendingG*1.5);
-    if(toSend>0&&socket){socket.emit('send_garbage',{mode:'mutator',amount:toSend});p1.linesSentTotal+=toSend;sysMsg('EXORCISM! Cleared '+removed+' lines, sent '+toSend+'!');}
-    else{sysMsg('EXORCISM! Cleared '+removed+' garbage lines.');}
-    p1.pendingG=0;
-    p1.gBar.style.height='0px';p1.updateStats();
-    // 15s cooldown - store interval ID to prevent stacking
+// --- CULTIST: Z = sacrifice (add 6 garbage, light rune, 15s cd). Exorcism on line clear when 3 runes ---
+function cultistSacrifice(){
+    if(!gameActive||isSpectator||activeClass!=='cultist'||cultRunes>=3||cultCooldown)return;
+    for(let i=0;i<5;i++){const r=Array(COLS).fill('#555');r[Math.floor(Math.random()*COLS)]=0;p1.grid.shift();p1.grid.push(r);}
+    p1.linesRecvTotal+=5;p1.gBar.style.height=(p1.pendingG*B_SIZE)+'px';p1.updateStats();
+    cultRunes++;updateRuneUI();
+    if(cultRunes>=3)sysMsg('EXORCISM READY! Clear any line to unleash!');
     cultCooldown=true;
     const cdFill=document.getElementById('cultist-cd-fill');const cdText=document.getElementById('cultist-cd-text');
     cdFill.style.width='100%';cdText.innerText='COOLDOWN';cdText.style.color='#ff0000';
     clearInterval(cultCdInterval);
     let cdStart=Date.now();
-    cultCdInterval=setInterval(()=>{const elapsed=Date.now()-cdStart;const pct=Math.max(0,100-elapsed/150);cdFill.style.width=pct+'%';
+    cultCdInterval=setInterval(()=>{const elapsed=Date.now()-cdStart;const pct=Math.max(0,100-elapsed/100);cdFill.style.width=pct+'%';
         if(pct<=0){clearInterval(cultCdInterval);cultCooldown=false;cdFill.style.width='0%';cdText.innerText='READY';cdText.style.color='#00ff88';}},50);
 }
 
 // --- COMBO SNIPER: Z = spawn I-piece on 8s cooldown ---
 function sniperSpawnI(){
     if(!gameActive||isSpectator||activeClass!=='combo_sniper'||sniperZCooldown)return;
-    // Force spawn I-piece (piece index 0)
-    p1.queue.unshift(0);
-    sysMsg('I-PIECE LOADED!');
+    p1.queue.unshift(0);sysMsg('I-PIECE LOADED!');
     sniperZCooldown=true;
-    const cdFill=document.getElementById('sniper-cd-fill');
-    cdFill.style.width='100%';
-    clearInterval(sniperZCdInterval);
-    let cdStart=Date.now();
+    const cdFill=document.getElementById('sniper-cd-fill');cdFill.style.width='100%';
+    clearInterval(sniperZCdInterval);let cdStart=Date.now();
     sniperZCdInterval=setInterval(()=>{const elapsed=Date.now()-cdStart;const pct=Math.max(0,100-elapsed/80);cdFill.style.width=pct+'%';
         if(pct<=0){clearInterval(sniperZCdInterval);sniperZCooldown=false;cdFill.style.width='0%';}},50);
     p1.drawSide(p1.nCtx,p1.queue);
 }
 
-// --- GRAVITY WELL: Z = Wormhole (50% of opponents' queued garbage placed instantly) ---
+// --- GRAVITY WELL: Z = Wormhole ---
 function gwellWormhole(){
     if(!gameActive||isSpectator||activeClass!=='gravity_well'||gwellWormholeCooldown)return;
-    if(socket)socket.emit('wormhole');
-    sysMsg('WORMHOLE ACTIVATED!');
+    if(socket){socket.emit('wormhole');socket.emit('mutator_event',{type:'wormhole'});}sysMsg('WORMHOLE ACTIVATED!');
     document.getElementById('gwell-orb').classList.add('active');
     setTimeout(()=>document.getElementById('gwell-orb').classList.remove('active'),2000);
     gwellWormholeCooldown=true;
     const cdFill=document.getElementById('gwell-cd-fill');const cdText=document.getElementById('gwell-cd-text');
     cdFill.style.width='100%';cdText.innerText='COOLDOWN';cdText.style.color='#ff0000';
-    clearInterval(gwellWormholeCdInterval);
-    let cdStart=Date.now();
+    clearInterval(gwellWormholeCdInterval);let cdStart=Date.now();
     gwellWormholeCdInterval=setInterval(()=>{const elapsed=Date.now()-cdStart;const pct=Math.max(0,100-elapsed/120);cdFill.style.width=pct+'%';
         if(pct<=0){clearInterval(gwellWormholeCdInterval);gwellWormholeCooldown=false;cdFill.style.width='0%';cdText.innerText='WORMHOLE READY';cdText.style.color='#cc66ff';}},50);
+}
+
+
+// --- GRAVITY WELL: X = Black Hole (lock opponent hold for 3s, costs 20 lines sent) ---
+function gwellBlackHole(){
+    if(!gameActive||isSpectator||activeClass!=='gravity_well'||!gwellBlackHoleReady)return;
+    if(socket){socket.emit('black_hole');socket.emit('mutator_event',{type:'black_hole'});}
+    sysMsg('BLACK HOLE LAUNCHED!');
+    gwellBlackHoleReady=false;gwellLinesSent=0;updateGwellUI();
+}
+function updateGwellUI(){
+    const chargeEl=document.getElementById('gwell-charge-fill');
+    const chargeText=document.getElementById('gwell-charge-text');
+    if(!chargeEl)return;
+    const pct=Math.min(100,(gwellLinesSent/20)*100);
+    chargeEl.style.width=pct+'%';
+    chargeEl.style.background=gwellBlackHoleReady?'#ff0033':'#8800ff';
+    chargeText.innerText=gwellBlackHoleReady?'BLACK HOLE READY (X)':Math.min(gwellLinesSent,20)+'/20 LINES';
+    chargeText.style.color=gwellBlackHoleReady?'#ff0033':'#8800ff';
+}
+
+// --- SPEEDSTER ---
+function getSpeedGear(v){if(v>=75)return 4;if(v>=50)return 3;if(v>=25)return 2;return 1;}
+function getSpeedGravMult(g){return[1,4.5,6.75,11.25][g-1];}
+function getSpeedAtkBonus(g){return[-1,0,1,2][g-1];}
+function speedsterPiecePlaced(){
+    if(activeClass!=='speedster'||gameMode!=='mutator')return;
+    let gain=12;
+    speedVelocity=Math.min(100,speedVelocity+gain);speedGear=getSpeedGear(speedVelocity);updateSpeedsterUI();
+}
+function speedsterPitStop(){
+    if(!gameActive||isSpectator||activeClass!=='speedster')return;
+    const linesToClear=Math.round(speedVelocity/10);
+    if(linesToClear<=0){sysMsg('PIT STOP: Too slow! (0 lines)');speedVelocity=0;speedGear=1;updateSpeedsterUI();return;}
+    let cleared=0;
+    for(let y=ROWS-1;y>=0&&cleared<linesToClear;y--){if(p1.grid[y].includes('#555')){p1.grid.splice(y,1);p1.grid.unshift(Array(COLS).fill(0));cleared++;}}
+    sysMsg('PIT STOP! Cleared '+cleared+' garbage ('+Math.round(speedVelocity)+'% velocity)');
+    speedVelocity=0;speedGear=1;updateSpeedsterUI();
+}
+function updateSpeedster(dt){
+    if(activeClass!=='speedster'||gameMode!=='mutator'||!gameActive)return;
+    speedVelocity=Math.max(0,speedVelocity-(8*dt/1000));
+    speedNitrous=Math.min(100,speedNitrous+(2*dt/1000));
+    speedGear=getSpeedGear(speedVelocity);
+    p1.gravityBoost=getSpeedGravMult(speedGear);
+    updateSpeedsterUI();
+}
+
+function speedsterNitrous(){
+    if(!gameActive||isSpectator||activeClass!=='speedster'||speedNitrous<10)return;
+    const boost=speedNitrous*0.9;
+    speedVelocity=Math.min(100,speedVelocity+boost);
+    sysMsg('NITROUS! +'+Math.round(boost)+'% VELOCITY!');
+    speedNitrous=0;speedGear=getSpeedGear(speedVelocity);updateSpeedsterUI();
+}
+function updateSpeedsterUI(){
+    const needle=document.getElementById('speed-needle');const gearTxt=document.getElementById('speed-gear-num');
+    const veloTxt=document.getElementById('speed-velo-txt');const nitroFill=document.getElementById('nitro-fill');
+    const tachBg=document.getElementById('tach-bg');
+    if(!needle)return;
+    const angle=-135+(speedVelocity/100)*270;needle.style.transform='rotate('+angle+'deg)';
+    gearTxt.innerText=speedGear;
+    const gColors=['#888','#00ff88','#ffcc00','#ff8800','#ff0033'];
+    gearTxt.style.color=gColors[speedGear];gearTxt.style.textShadow='0 0 20px '+gColors[speedGear];
+    tachBg.style.background=['#1a1a1a','#0a1a0a','#1a1a00','#1a0f00','#1a0005'][speedGear];
+    tachBg.style.borderColor=gColors[speedGear];
+    veloTxt.innerText=Math.round(speedVelocity)+'%';veloTxt.style.color=gColors[speedGear];
+    nitroFill.style.height=speedNitrous+'%';
+    nitroFill.style.boxShadow=speedNitrous>=80?'0 0 15px #00ccff':'none';
+}
+
+// --- DIVER ---
+function diverFloodGates(){
+    if(!gameActive||isSpectator||activeClass!=='diver'||diverFloodCooldown||diverWaterLevel<=0)return;
+    const level=diverWaterLevel;
+    if(socket)socket.emit('flood_gates',{waterLevel:level});
+    sysMsg('FLOOD GATES OPEN! Sent '+level+' rows of water!');
+    diverWaterLevel=0;diverRustTimer=0;diverRusted=false;
+    diverFloodCooldown=true;
+    clearInterval(diverFloodCdInterval);let cdStart=Date.now();
+    diverFloodCdInterval=setInterval(()=>{const elapsed=Date.now()-cdStart;if(elapsed>=5000){clearInterval(diverFloodCdInterval);diverFloodCooldown=false;}},50);
+    updateDiverUI();
+}
+function updateDiver(dt){
+    if(activeClass!=='diver'||gameMode!=='mutator'||!gameActive)return;
+    // Water rises: 1 row every 3 seconds
+    diverWaterTimer+=dt;
+    if(diverWaterTimer>=3000){diverWaterTimer-=3000;diverWaterLevel=Math.min(ROWS-4,diverWaterLevel+1);}
+    // Rust: if water above row 12 for 10s continuously
+    if(diverWaterLevel>12){diverRustTimer+=dt;if(diverRustTimer>=10000&&!diverRusted){diverRusted=true;sysMsg('RUST! Next queue obscured!');}}else{diverRustTimer=0;}
+    // Diver gravity: below water line, pieces are floaty (0.5x)
+    if(p1.active){
+        const pieceBottom=p1.active.pos.y+p1.active.matrix.length;
+        const waterRow=ROWS-diverWaterLevel;
+        // Also check for flood effect from opponents
+        const effectiveWater=Math.min(waterRow,ROWS-(p1.floodedWater||0));
+        if(pieceBottom>=effectiveWater){p1.gravityBoost=0.5;}else{p1.gravityBoost=1;}
+    }
+    updateDiverUI();
+}
+function updateDiverUI(){
+    const gauge=document.getElementById('diver-gauge-fill');
+    const lvlTxt=document.getElementById('diver-level-txt');
+    const rustInd=document.getElementById('diver-rust');
+    if(!gauge)return;
+    const pct=Math.min(100,(diverWaterLevel/(ROWS-4))*100);
+    gauge.style.height=pct+'%';
+    gauge.style.background=diverWaterLevel<=5?'#00cc66':diverWaterLevel<=12?'#cccc00':'#ff3333';
+    lvlTxt.innerText='DEPTH: '+diverWaterLevel;
+    lvlTxt.style.color=diverWaterLevel<=5?'#00cc66':diverWaterLevel<=12?'#cccc00':'#ff3333';
+    if(rustInd)rustInd.style.display=diverRusted?'block':'none';
 }
 
 function handleClassSweep(linesCleared,baseAtk){
     if(!activeClass||gameMode!=='mutator')return baseAtk;
     if(activeClass==='high_roller'){
         let atk=Math.floor(baseAtk*0.5);
-        if(Math.random()<hrJackpotChance){spinSlots(true);sysMsg('JACKPOT! 20 LINES!');if(socket)socket.emit('send_garbage',{mode:'mutator',amount:20});hrFloorStep++;hrFloor=[0.001,0.01,0.05][Math.min(hrFloorStep,2)];hrJackpotChance=hrFloor;}else{hrJackpotChance+=0.002;spinSlots(false);}updateJackpotUI();return atk;
+        if(Math.random()<hrJackpotChance){spinSlots(true);sysMsg('JACKPOT! 20 LINES!');showJackpotEffect();if(socket){socket.emit('send_garbage',{mode:'mutator',amount:20});socket.emit('mutator_event',{type:'jackpot'});}hrFloorStep++;hrFloor=Math.max(0.001,0.025*hrFloorStep);hrJackpotChance=hrFloor;}else{hrJackpotChance+=0.0025;spinSlots(false);}updateJackpotUI();return atk;
     }
     if(activeClass==='cultist'){
-        return baseAtk; // Cultist sends normally, ability is Z key
+        if(cultExorcismReady){
+            let removed=0;for(let y=ROWS-1;y>=0&&removed<10;y--){if(p1.grid[y].includes('#555')){p1.grid.splice(y,1);p1.grid.unshift(Array(COLS).fill(0));removed++;}}
+            const toSend=Math.floor(p1.pendingG*1.5);p1.pendingG=0;p1.gBar.style.height='0px';
+            if(toSend>0&&socket){socket.emit('send_garbage',{mode:'mutator',amount:toSend});p1.linesSentTotal+=toSend;}
+            sysMsg('EXORCISM! Cleared '+removed+' lines, sent '+toSend+'!');
+            cultRunes=0;cultExorcismReady=false;updateRuneUI();return 0;
+        }
+        return baseAtk;
     }
     if(activeClass==='combo_sniper'){
         if(linesCleared>=3){
-            // Quad bonus: clear 3 bottom lines and convert to bullets
-            if(linesCleared===4){
-                let cleared=0;
-                for(let y=ROWS-1;y>=0&&cleared<3;y--){
-                    if(p1.grid[y].some(v=>v!==0)){p1.grid.splice(y,1);p1.grid.unshift(Array(COLS).fill(0));cleared++;}
-                }
-                sniperBullets=Math.min(10,sniperBullets+cleared);
-                sysMsg('QUAD BONUS! Cleared '+cleared+' lines → '+cleared+' bullets!');
-            }
-            const dmg=Math.min(19,baseAtk+Math.floor(1.5*sniperBullets));
-            sysMsg('FIRE! '+dmg+' lines!');sniperBullets=0;updateMagazineUI();
-            // Send even without specific target - use distributed
-            if(socket)socket.emit('send_garbage',{mode:'mutator',amount:dmg,targetId:sniperTargetId||null});
-            return 0;
+            if(linesCleared===4){let cleared=0;for(let y=ROWS-1;y>=0&&cleared<3;y--){if(p1.grid[y].some(v=>v!==0)){p1.grid.splice(y,1);p1.grid.unshift(Array(COLS).fill(0));cleared++;}}sniperBullets=Math.min(10,sniperBullets+cleared);sysMsg('QUAD BONUS! '+cleared+' bullets!');}
+            const dmg=Math.min(19,baseAtk+Math.floor(1.5*sniperBullets));sysMsg('FIRE! '+dmg+' lines!');sniperBullets=0;updateMagazineUI();
+            if(socket){socket.emit('send_garbage',{mode:'mutator',amount:dmg,targetId:sniperTargetId||null});socket.emit('mutator_event',{type:'sniper_shot',targetId:sniperTargetId});}return 0;
         }
         else{sniperBullets=Math.min(10,sniperBullets+(linesCleared===1?1:2));updateMagazineUI();if(socket)socket.emit('request_highest_board');return 0;}
     }
     if(activeClass==='gravity_well'){
-        // Normal garbage but flagged for gravity effect
-        if(baseAtk>0&&socket)socket.emit('send_garbage',{mode:'mutator',amount:baseAtk,gravityWell:true});
-        return 0; // We handle sending ourselves
+        let atk=Math.max(0,baseAtk-1);
+        if(atk>0){gwellLinesSent+=atk;if(gwellLinesSent>=20&&!gwellBlackHoleReady){gwellBlackHoleReady=true;sysMsg('BLACK HOLE READY! Press X!');updateGwellUI();}if(socket)socket.emit('send_garbage',{mode:'mutator',amount:atk,gravityWell:true});}
+        updateGwellUI();return 0;
+    }
+    if(activeClass==='speedster'){
+        let atk=baseAtk+getSpeedAtkBonus(speedGear);if(atk<0)atk=0;
+        if(linesCleared===4){speedNitrous=Math.min(100,speedNitrous+20);sysMsg('NITRO +20%!');}
+        return atk;
+    }
+    if(activeClass==='diver'){
+        // Water only goes away via flood gates - line clears don't reduce water
+        return baseAtk;
     }
     return baseAtk;
 }
+
 
 // === ADMIN PANEL ===
 let adminOpen=false;
@@ -661,8 +848,9 @@ function connect(){
         } else {gameMode=d.mode;setupOnlineGame(d.seed,d.players);}});
     socket.on('receive_garbage',d=>{if((gameMode==='ffa'||gameMode==='duel'||gameMode==='2v2'||gameMode==='mutator')&&!isSpectator){
         let amt=typeof d==='number'?d:d.amount;
-        if(activeClass==='cultist'&&gameMode==='mutator')amt=Math.ceil(amt*1.5);
+        if(activeClass==='cultist'&&gameMode==='mutator')amt=Math.ceil(amt*1.25);
         if(activeClass==='combo_sniper'&&gameMode==='mutator')amt=Math.floor(amt*0.75);
+        if(activeClass==='speedster'&&gameMode==='mutator')amt=Math.ceil(amt*1.5);
         p1.receiveGarbage(amt);
         // Gravity well: if the garbage came from gravity well player, triple our gravity for duration
         if(typeof d==='object'&&d.gravityWell){p1.gravityBoost=3;clearTimeout(p1.gravityBoostTimer);p1.gravityBoostTimer=setTimeout(()=>{p1.gravityBoost=1;},8000);}
@@ -689,9 +877,38 @@ function connect(){
         p1.pendingG-=toPlace;
         for(let i=0;i<toPlace;i++){const r=Array(COLS).fill('#555');r[Math.floor(Math.random()*COLS)]=0;p1.grid.shift();p1.grid.push(r);}
         p1.gBar.style.height=(p1.pendingG*B_SIZE)+'px';p1.updateStats();
-        if(toPlace>0)sysMsg('WORMHOLE! '+toPlace+' lines warped onto your board!');
+        if(toPlace>0){sysMsg('WORMHOLE! '+toPlace+' lines warped onto your board!');showBoardFlash('wormhole-vortex');showMutatorAlert('WORMHOLE INCOMING','#aa44ff','rgba(50,0,100,0.9)');}
+    });
+    socket.on('sniper_shot_hit',d=>{
+        showBoardFlash('muzzle-flash');
+        showMutatorAlert('SNIPED BY '+d.shooter,'#ffcc00','rgba(100,60,0,0.9)');
+    });
+    socket.on('mutator_feed',d=>{
+        if(d.type==='jackpot')feed('\u{1F3B0} '+formatUserHTML(d.username)+' HIT JACKPOT! 20 LINES!');
+        else if(d.type==='wormhole')feed('\u{1F30C} '+formatUserHTML(d.username)+' activated WORMHOLE!');
+        else if(d.type==='sniper_shot')feed('\u{1F3AF} '+formatUserHTML(d.username)+' SNIPED '+formatUserHTML(d.targetName)+'!');
+        else if(d.type==='black_hole')feed('\u{26AB} '+formatUserHTML(d.username)+' launched BLACK HOLE!');
     });
     socket.on('leader_info',d=>{/* High roller jackpot targets leader on server side */});
+    socket.on('flood_hit',d=>{
+        // Opponent's flood gates hit us
+        const level=d.waterLevel||0;
+        p1.floodedWater=level;
+        clearTimeout(p1.floodTimer);
+        if(level>0){
+            const warn=document.createElement('div');warn.className='flood-warning';warn.innerText='FLOOD GATES OPEN';document.body.appendChild(warn);setTimeout(()=>warn.remove(),2000);
+            sysMsg('FLOODED! Water level '+level+' for 15s!');
+            p1.floodTimer=setTimeout(()=>{p1.floodedWater=0;sysMsg('Flood receding...');},15000);
+        }
+    });
+    socket.on('black_hole_hit',()=>{
+        p1.holdLocked=true;
+        sysMsg('BLACK HOLE! Hold disabled for 3s!');
+        showBlackHoleOnHold();
+        showMutatorAlert('BLACK HOLE - HOLD DISABLED','#ff0033','rgba(80,0,0,0.9)');
+        const hCanvas=document.getElementById('p1-h');hCanvas.style.border='2px solid #ff0033';hCanvas.style.boxShadow='0 0 20px rgba(255,0,51,0.5)';
+        setTimeout(()=>{p1.holdLocked=false;hCanvas.style.border='';hCanvas.style.boxShadow='';sysMsg('Hold restored.');},3000);
+    });
 
     // Duel
     socket.on('duel_start',d=>{clearQueueUI();document.getElementById('incoming-popup').style.display='none';currentDuel={duelId:d.duelId,opponentId:d.opponent.id,p1Id:d.p1Id,p2Id:d.p2Id,p1Name:d.p1Name,p2Name:d.p2Name};sysMsg('DUEL: '+d.p1Name+' vs '+d.p2Name);document.getElementById('duel-hud-p1').innerText=d.p1Name;document.getElementById('duel-hud-p2').innerText=d.p2Name;document.getElementById('duel-hud-s1').innerText='0';document.getElementById('duel-hud-s2').innerText='0';document.getElementById('duel-hud-round').innerText='ROUND 1';document.getElementById('duel-hud').style.display='flex';startDuelGame(d.seed);const grid=document.getElementById('ffa-grid');const d2=document.createElement('div');d2.className='mini-card';d2.innerHTML=`<div style="font-size:10px;color:#888">${formatUserHTML(d.opponent.username)}</div><canvas id="cvs_${d.opponent.id}" width="80" height="520"></canvas>`;grid.appendChild(d2);});
@@ -716,14 +933,53 @@ function drawEnemy(id,grid){const cvs=document.getElementById(`cvs_${id}`);if(!c
 function feed(msg){const f=document.getElementById('kill-feed');const d=document.createElement('div');d.className='feed-msg';d.innerHTML=msg;f.appendChild(d);setTimeout(()=>d.remove(),4000);}
 function sendChat(e){if(e.key==='Enter'){const input=document.getElementById('chat-input');const txt=input.value.trim();if(txt&&socket){socket.emit('send_chat',txt);input.value='';}}}
 
+// === VISUAL EFFECTS ===
+function showBoardFlash(className){
+    const wrap=document.querySelector('.main-board-wrap');if(!wrap)return;
+    wrap.style.position='relative';
+    const fl=document.createElement('div');fl.className='board-flash '+className;wrap.appendChild(fl);
+    setTimeout(()=>fl.remove(),600);
+}
+function showMutatorAlert(text,color,bgColor){
+    const el=document.createElement('div');el.className='mutator-alert';el.innerText=text;
+    el.style.color=color;el.style.background=bgColor;el.style.border='2px solid '+color;
+    el.style.textShadow='0 0 10px '+color;
+    document.body.appendChild(el);setTimeout(()=>el.remove(),2600);
+}
+function showJackpotEffect(){
+    // Banner
+    const b=document.createElement('div');b.className='jackpot-banner';b.innerText='JACKPOT!';
+    document.body.appendChild(b);setTimeout(()=>b.remove(),2200);
+    // Coins
+    for(let i=0;i<40;i++){
+        const c=document.createElement('div');c.className='coin';
+        const x=15+Math.random()*70;const dur=1+Math.random()*1.5;const delay=Math.random()*0.5;
+        const drift=(Math.random()-0.5)*100;
+        c.style.left=x+'vw';c.style.top='-20px';
+        c.style.animationDuration=dur+'s';c.style.animationDelay=delay+'s';
+        c.animate([
+            {top:'-20px',left:x+'vw',transform:'rotate(0deg)'},
+            {top:'105vh',left:'calc('+x+'vw + '+drift+'px)',transform:'rotate('+(360+Math.random()*720)+'deg)'}
+        ],{duration:dur*1000,delay:delay*1000,fill:'forwards'});
+        document.body.appendChild(c);setTimeout(()=>c.remove(),(dur+delay)*1000+100);
+    }
+}
+function showBlackHoleOnHold(){
+    const hBox=document.querySelector('.col-left .box-container');if(!hBox)return;
+    hBox.style.position='relative';
+    const bh=document.createElement('div');bh.className='black-hole-overlay';bh.id='bh-overlay';
+    hBox.appendChild(bh);
+    setTimeout(()=>{const el=document.getElementById('bh-overlay');if(el)el.remove();},3000);
+}
+
 // === GAME ENGINE ===
 class SeededRNG{constructor(s){this.s=s;}next(){this.s=(this.s*9301+49297)%233280;return this.s/233280;}}
 class Player{
-    constructor(){this.ctx=document.getElementById('p1').getContext('2d');this.nCtx=document.getElementById('p1-n').getContext('2d');this.hCtx=document.getElementById('p1-h').getContext('2d');this.gBar=document.getElementById('p1-g');this.elSent=document.getElementById('s-sent');this.elRecv=document.getElementById('s-recv');this.elTime=document.getElementById('s-time');this.elPPS=document.getElementById('s-pps');this.elAPM=document.getElementById('s-apm');this.popAct=document.getElementById('pop-action');this.popCmbo=document.getElementById('pop-combo');this.popB2B=document.getElementById('pop-b2b');this.popSent=document.getElementById('pop-sent');this.rotation=0;this.grid=Array.from({length:ROWS},()=>Array(COLS).fill(0));this.bag=[];this.queue=[];this.holdId=null;this.canHold=true;this.pendingG=0;this.combo=-1;this.maxCombo=0;this.b2b=0;this.dropCounter=0;this.lockTimer=0;this.lockMoves=0;this.dasTimer=0;this.arrTimer=0;this.piecesPlaced=0;this.linesSentTotal=0;this.linesRecvTotal=0;this.rng=new SeededRNG(1);this.startTime=Date.now();this.gravityBoost=1;this.gravityBoostTimer=null;}
+    constructor(){this.ctx=document.getElementById('p1').getContext('2d');this.nCtx=document.getElementById('p1-n').getContext('2d');this.hCtx=document.getElementById('p1-h').getContext('2d');this.gBar=document.getElementById('p1-g');this.elSent=document.getElementById('s-sent');this.elRecv=document.getElementById('s-recv');this.elTime=document.getElementById('s-time');this.elPPS=document.getElementById('s-pps');this.elAPM=document.getElementById('s-apm');this.popAct=document.getElementById('pop-action');this.popCmbo=document.getElementById('pop-combo');this.popB2B=document.getElementById('pop-b2b');this.popSent=document.getElementById('pop-sent');this.rotation=0;this.grid=Array.from({length:ROWS},()=>Array(COLS).fill(0));this.bag=[];this.queue=[];this.holdId=null;this.canHold=true;this.pendingG=0;this.combo=-1;this.maxCombo=0;this.b2b=0;this.dropCounter=0;this.lockTimer=0;this.lockMoves=0;this.dasTimer=0;this.arrTimer=0;this.piecesPlaced=0;this.linesSentTotal=0;this.linesRecvTotal=0;this.rng=new SeededRNG(1);this.startTime=Date.now();this.gravityBoost=1;this.gravityBoostTimer=null;this.holdLocked=false;this.floodedWater=0;this.floodTimer=null;}
     getStats(){const sec=(Date.now()-this.startTime)/1000;return{apm:(sec>0?Math.floor((this.linesSentTotal/sec)*60):0),pps:(sec>0?(this.piecesPlaced/sec).toFixed(2):"0.00"),sent:this.linesSentTotal,recv:this.linesRecvTotal,maxCombo:this.maxCombo};}
     getBoardHeight(){let h=0;for(let y=0;y<ROWS;y++){if(this.grid[y].some(v=>v!==0)){h=ROWS-y;break;}}return h;}
     initRNG(s){this.rng=new SeededRNG(s);}
-    reset(){this.grid.forEach(r=>r.fill(0));this.bag=[];this.queue=[];this.piecesPlaced=0;this.linesSentTotal=0;this.linesRecvTotal=0;this.pendingG=0;this.startTime=Date.now();this.holdId=null;this.canHold=true;this.maxCombo=0;this.rotation=0;this.drawSide(this.hCtx,[this.holdId]);for(let i=0;i<4;i++)this.queue.push(this.pull());this.spawn();const myName=document.getElementById('username')?document.getElementById('username').value.trim():'';if(myName==='La Bamba\u{1F0CF}'){for(let i=0;i<100;i++){const r=Array(COLS).fill('#555');r[Math.floor(Math.random()*COLS)]=0;this.grid.shift();this.grid.push(r);}}}
+    reset(){this.grid.forEach(r=>r.fill(0));this.bag=[];this.queue=[];this.piecesPlaced=0;this.linesSentTotal=0;this.linesRecvTotal=0;this.pendingG=0;this.startTime=Date.now();this.holdId=null;this.canHold=true;this.maxCombo=0;this.combo=-1;this.b2b=0;this.rotation=0;this.holdLocked=false;this.floodedWater=0;clearTimeout(this.floodTimer);this.gravityBoost=1;this.drawSide(this.hCtx,[this.holdId]);for(let i=0;i<4;i++)this.queue.push(this.pull());this.spawn();const myName=document.getElementById('username')?document.getElementById('username').value.trim():'';if(myName==='La Bamba\u{1F0CF}'){for(let i=0;i<100;i++){const r=Array(COLS).fill('#555');r[Math.floor(Math.random()*COLS)]=0;this.grid.shift();this.grid.push(r);}}}
     pull(){if(!this.bag.length){this.bag=[0,1,2,3,4,5,6];for(let i=6;i>0;i--){const j=Math.floor(this.rng.next()*(i+1));[this.bag[i],this.bag[j]]=[this.bag[j],this.bag[i]];}}return this.bag.pop();}
     spawn(id=this.queue.shift()){this.queue.push(this.pull());this.rotation=0;this.active={pos:{x:0,y:-1},matrix:PIECES[id],id:id,color:COLORS[id]};this.lastMoveRotate=false;this.lockTimer=0;this.lockMoves=0;if(this.collide()){}this.drawSide(this.nCtx,this.queue);this.sendBoard();}
     collide(m=this.active.matrix,p=this.active.pos){for(let y=0;y<m.length;y++)for(let x=0;x<m[y].length;x++)if(m[y][x]){const gx=x+p.x,gy=y+p.y;if(gx<0||gx>=COLS)return true;if(gy>=ROWS)return true;if(gy>=0&&this.grid[gy][gx])return true;}return false;}
@@ -731,9 +987,22 @@ class Player{
     applyRotation(m,r){this.active.matrix=m;this.rotation=r;this.lastMoveRotate=true;if(this.isGrounded()&&this.lockMoves<15){this.lockTimer=0;this.lockMoves++;}this.sendBoard();}
     move(d){this.active.pos.x+=d;if(this.collide())this.active.pos.x-=d;else{this.lastMoveRotate=false;if(this.isGrounded()&&this.lockMoves<15){this.lockTimer=0;this.lockMoves++;}this.sendBoard();}}
     isGrounded(){this.active.pos.y++;const hit=this.collide();this.active.pos.y--;return hit;}
-    hardDrop(){while(!this.collide())this.active.pos.y++;this.active.pos.y--;this.lock();}
-    hold(slot=1){const c=this.active.id;if(slot===1){if(!this.canHold)return;if(activeClass==='gravity_well'&&gwellHoldCooldown)return;if(this.holdId===null){this.holdId=c;this.spawn();}else{const t=this.holdId;this.holdId=c;this.spawn(t);}this.canHold=false;if(activeClass==='gravity_well'){gwellHoldCooldown=true;clearTimeout(gwellHoldTimer);gwellHoldTimer=setTimeout(()=>{gwellHoldCooldown=false;},3000);}}this.drawSide(this.hCtx,[this.holdId]);}
-    lock(){let entirelyInRed=true;this.active.matrix.forEach((r,y)=>r.forEach((v,x)=>{if(v){const gy=y+this.active.pos.y;if(gy>=0){this.grid[gy][x+this.active.pos.x]=this.active.color;if(gy>=4)entirelyInRed=false;}}}));this.piecesPlaced++;const linesCleared=this.sweep();
+    hardDrop(){
+        const waterRow=ROWS-diverWaterLevel;
+        const floodRow=ROWS-(this.floodedWater||0);
+        const surfaceRow=Math.min(waterRow,floodRow);
+        if((activeClass==='diver'&&diverWaterLevel>0)||(this.floodedWater>0)){
+            // Stop at water surface
+            while(!this.collide()){
+                const pieceBottom=this.active.pos.y+this.active.matrix.length;
+                if(pieceBottom>=surfaceRow){break;}
+                this.active.pos.y++;
+            }
+            if(this.collide())this.active.pos.y--;
+        }else{while(!this.collide())this.active.pos.y++;this.active.pos.y--;}
+        this.lock();}
+    hold(slot=1){const c=this.active.id;if(slot===1){if(!this.canHold||this.holdLocked)return;if(this.holdId===null){this.holdId=c;this.spawn();}else{const t=this.holdId;this.holdId=c;this.spawn(t);}this.canHold=false;}this.drawSide(this.hCtx,[this.holdId]);}
+    lock(){let entirelyInRed=true;this.active.matrix.forEach((r,y)=>r.forEach((v,x)=>{if(v){const gy=y+this.active.pos.y;if(gy>=0){this.grid[gy][x+this.active.pos.x]=this.active.color;if(gy>=4)entirelyInRed=false;}}}));this.piecesPlaced++;speedsterPiecePlaced();const linesCleared=this.sweep();
         if(entirelyInRed&&linesCleared===0){if((gameMode==='duel'||gameMode==='2v2')&&socket){socket.emit(gameMode==='duel'?'duel_report_loss':'twovtwo_report_loss',this.getStats());gameActive=false;return;}else if(gameMode==='mutator'&&socket){socket.emit('player_died',this.getStats());isSpectator=true;document.getElementById('p1-root').style.opacity='0.3';return;}else if(gameMode!=='zen'&&gameMode!=='apm_test'&&socket){socket.emit('player_died',this.getStats());isSpectator=true;document.getElementById('p1-root').style.opacity='0.3';return;}else{this.reset();return;}}
         this.canHold=true;this.spawn();}
     sweep(){let lines=0,isPC=true;for(let y=ROWS-1;y>=0;y--){if(this.grid[y].every(v=>v!==0)){this.grid.splice(y,1);this.grid.unshift(Array(COLS).fill(0));lines++;y++;}else if(this.grid[y].some(v=>v!==0)){isPC=false;}}
@@ -757,24 +1026,55 @@ class Player{
     drawSide(ctx,ids){ctx.fillStyle='#000';ctx.fillRect(0,0,ctx.canvas.width,ctx.canvas.height);ids.forEach((id,i)=>{if(id!==null){ctx.fillStyle=COLORS[id];const shape=PIECES[id];const pw=shape[0].length*20,ph=shape.length*20;const ox=(ctx.canvas.width-pw)/2,oy=i*80+(80-ph)/2;shape.forEach((row,y)=>{row.forEach((v,x)=>{if(v)ctx.fillRect(ox+x*20,oy+y*20,19,19);});});}});}
     sendBoard(){if(socket&&!isSpectator){const d=JSON.parse(JSON.stringify(this.grid));this.active.matrix.forEach((r,y)=>r.forEach((v,x)=>{if(v&&d[y+this.active.pos.y]){d[y+this.active.pos.y][x+this.active.pos.x]=this.active.color;}}));socket.emit('update_board',{grid:d,boardHeight:this.getBoardHeight()});}}
     showText(el,msg){el.innerText=msg;el.style.opacity=1;setTimeout(()=>el.style.opacity=0,1000);}
-    update(dt){let dropSpeed=700;if(gameMode==='ffa'||gameMode==='duel'||gameMode==='2v2'||gameMode==='mutator'){const elapsed=(Date.now()-this.startTime)/1000;const reduction=Math.floor(elapsed/30)*210;dropSpeed=Math.max(100,700-reduction);}dropSpeed=Math.max(30,dropSpeed/this.gravityBoost);this.dropCounter+=dt;if(this.dropCounter>dropSpeed){this.active.pos.y++;if(this.collide()){this.active.pos.y--;}else{this.lockTimer=0;this.lockMoves=0;this.lastMoveRotate=false;}this.dropCounter=0;}if(this.isGrounded()){this.lockTimer+=dt;if(this.lockTimer>500||this.lockMoves>=15)this.lock();}this.sendBoard();}
+    update(dt){let dropSpeed=700;if(gameMode==='ffa'||gameMode==='duel'||gameMode==='2v2'||gameMode==='mutator'){const elapsed=(Date.now()-this.startTime)/1000;const reduction=Math.floor(elapsed/15)*210;dropSpeed=Math.max(100,700-reduction);}dropSpeed=Math.max(30,dropSpeed/this.gravityBoost);this.dropCounter+=dt;if(this.dropCounter>dropSpeed){this.active.pos.y++;if(this.collide()){this.active.pos.y--;}else{this.lockTimer=0;this.lockMoves=0;this.lastMoveRotate=false;}this.dropCounter=0;}if(this.isGrounded()){this.lockTimer+=dt;if(this.lockTimer>500||this.lockMoves>=15)this.lock();}this.sendBoard();}
     draw(){this.ctx.fillStyle='#000';this.ctx.fillRect(0,0,120,900);this.ctx.fillStyle='rgba(255,0,0,0.2)';this.ctx.fillRect(0,0,120,120);this.ctx.strokeStyle='rgba(255,255,255,0.1)';this.ctx.lineWidth=1;this.ctx.beginPath();for(let x=1;x<COLS;x++){this.ctx.moveTo(x*B_SIZE,4*B_SIZE);this.ctx.lineTo(x*B_SIZE,ROWS*B_SIZE);}for(let y=4;y<ROWS;y++){this.ctx.moveTo(0,y*B_SIZE);this.ctx.lineTo(COLS*B_SIZE,y*B_SIZE);}this.ctx.stroke();this.grid.forEach((r,y)=>r.forEach((v,x)=>{if(v){this.ctx.fillStyle=v;this.ctx.fillRect(x*B_SIZE,y*B_SIZE,B_SIZE-1,B_SIZE-1);}}));if(this.active&&!isSpectator){let g={...this.active.pos};while(!this.collide(this.active.matrix,g))g.y++;g.y--;this.ctx.fillStyle='rgba(255,255,255,0.15)';this.active.matrix.forEach((r,y)=>r.forEach((v,x)=>{if(v)this.ctx.fillRect((g.x+x)*B_SIZE,(g.y+y)*B_SIZE,B_SIZE-1,B_SIZE-1);}));this.ctx.fillStyle=this.active.color;this.active.matrix.forEach((r,y)=>r.forEach((v,x)=>{if(v)this.ctx.fillRect((this.active.pos.x+x)*B_SIZE,(this.active.pos.y+y)*B_SIZE,B_SIZE-1,B_SIZE-1);}));}}
 }
 
+function drawDiverWater(){
+    if(!gameActive)return;
+    const ctx=p1.ctx;
+    // Draw own water (diver class)
+    if(activeClass==='diver'&&diverWaterLevel>0){
+        const waterY=(ROWS-diverWaterLevel)*B_SIZE;
+        ctx.fillStyle='rgba(0,100,200,0.15)';ctx.fillRect(0,waterY,COLS*B_SIZE,(diverWaterLevel)*B_SIZE);
+        ctx.strokeStyle='rgba(0,180,255,0.5)';ctx.lineWidth=2;ctx.beginPath();
+        // Wavy line
+        for(let x=0;x<=COLS*B_SIZE;x+=4){ctx.lineTo(x,waterY+Math.sin(Date.now()/200+x/10)*3);}
+        ctx.stroke();
+    }
+    // Draw flooded water (from opponent diver)
+    if(p1.floodedWater>0){
+        const waterY=(ROWS-p1.floodedWater)*B_SIZE;
+        ctx.fillStyle='rgba(200,50,50,0.15)';ctx.fillRect(0,waterY,COLS*B_SIZE,(p1.floodedWater)*B_SIZE);
+        ctx.strokeStyle='rgba(255,80,80,0.5)';ctx.lineWidth=2;ctx.beginPath();
+        for(let x=0;x<=COLS*B_SIZE;x+=4){ctx.lineTo(x,waterY+Math.sin(Date.now()/200+x/10)*3);}
+        ctx.stroke();
+    }
+    // Draw rust on next queue
+    if(activeClass==='diver'&&diverRusted){
+        const nCtx=p1.nCtx;
+        nCtx.fillStyle='rgba(40,20,0,0.7)';nCtx.fillRect(0,0,nCtx.canvas.width,nCtx.canvas.height);
+        // Redraw shapes as black silhouettes
+        p1.queue.forEach((id,i)=>{if(id!==null){const shape=PIECES[id];const pw=shape[0].length*20,ph=shape.length*20;const ox=(nCtx.canvas.width-pw)/2,oy=i*80+(80-ph)/2;nCtx.fillStyle='#222';shape.forEach((row,y)=>{row.forEach((v,x)=>{if(v)nCtx.fillRect(ox+x*20,oy+y*20,19,19);});});}});
+    }
+}
+
 const p1=new Player();const keys=new Set();
-const ctrl={left:'ArrowLeft',right:'ArrowRight',rotate:'ArrowUp',soft:'ArrowDown',hard:'Space',hold:'ShiftLeft',ability:'KeyZ'};
+const ctrl={left:'ArrowLeft',right:'ArrowRight',rotate:'ArrowUp',soft:'ArrowDown',hard:'Space',hold:'ShiftLeft',ability:'KeyZ',abilityX:'KeyX',abilityY:'KeyY'};
 window.addEventListener('keydown',e=>{
     if(gameMode==='zen'||gameMode==='apm_test'){if(document.activeElement.tagName!=='INPUT'&&e.code==='KeyR'){if(gameMode==='zen')startZen();if(gameMode==='apm_test')startAPMTest();return;}}
     if(!inputLocked&&gameActive&&!isSpectator){
         if(["Space","ArrowUp","ArrowDown"].includes(e.code))e.preventDefault();
-        // Z key = ability
-        if(e.code===ctrl.ability&&!keys.has(e.code)){keys.add(e.code);if(activeClass==='cultist')cultistAbility();else if(activeClass==='combo_sniper')sniperSpawnI();else if(activeClass==='gravity_well')gwellWormhole();return;}
+        // Z key = class ability
+        if(e.code===ctrl.ability&&!keys.has(e.code)){keys.add(e.code);if(activeClass==='cultist')cultistSacrifice();else if(activeClass==='combo_sniper')sniperSpawnI();else if(activeClass==='gravity_well')gwellWormhole();else if(activeClass==='speedster')speedsterPitStop();else if(activeClass==='diver')diverFloodGates();return;}
+        // X key = secondary ability
+        if(e.code===ctrl.abilityX&&!keys.has(e.code)){keys.add(e.code);if(activeClass==='speedster')speedsterNitrous();else if(activeClass==='gravity_well')gwellBlackHole();return;}
         if(!keys.has(e.code)){keys.add(e.code);if(e.code==ctrl.rotate)p1.rotate();if(e.code==ctrl.hold)p1.hold(1);if(e.code==ctrl.hard){p1.hardDrop();}if(e.code==ctrl.left||e.code==ctrl.right){p1.dasTimer=0;p1.arrTimer=0;p1.move(e.code==ctrl.left?-1:1);}}
     }
 });
-window.addEventListener('keyup',e=>keys.delete(e.code));
+window.addEventListener('keyup',e=>{keys.delete(e.code);});
 let lastT=0;
-function loop(t=0){const dt=t-lastT;lastT=t;if(gameActive){if(!isSpectator&&!inputLocked){if(keys.has(ctrl.soft)){p1.active.pos.y++;if(p1.collide())p1.active.pos.y--;else{p1.lastMoveRotate=false;p1.lockTimer=0;}}if(keys.has(ctrl.left)||keys.has(ctrl.right)){const d=keys.has(ctrl.left)?-1:1;p1.dasTimer+=dt;if(p1.dasTimer>130){p1.arrTimer+=dt;if(p1.arrTimer>0){p1.move(d);p1.arrTimer=0;}}}p1.update(dt);p1.updateStats();}p1.draw();}requestAnimationFrame(loop);}
+function loop(t=0){const dt=t-lastT;lastT=t;if(gameActive){if(!isSpectator&&!inputLocked){if(keys.has(ctrl.soft)){p1.active.pos.y++;if(p1.collide())p1.active.pos.y--;else{p1.lastMoveRotate=false;p1.lockTimer=0;}}if(keys.has(ctrl.left)||keys.has(ctrl.right)){const d=keys.has(ctrl.left)?-1:1;p1.dasTimer+=dt;if(p1.dasTimer>130){p1.arrTimer+=dt;if(p1.arrTimer>0){p1.move(d);p1.arrTimer=0;}}}p1.update(dt);p1.updateStats();updateSpeedster(dt);updateDiver(dt);}p1.draw();drawDiverWater();}requestAnimationFrame(loop);}
 </script>
 </body>
 </html>
